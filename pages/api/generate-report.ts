@@ -15,30 +15,36 @@ export default async function handler(
     // Mock data with the new structure
     const mockReport = [
       {
+        id: "CERT-001",
+        question: "Security Certifications",
         prompt: "What are the vendor's security certifications and compliance standards?",
         response: {
           "Answer": "The vendor holds SOC 2 Type II, ISO 27001, and PCI DSS certifications.",
-          "Answer Quality": "High",
+          "Answer Quality": "ADEQUATE",
           "Answer Source": "Security Documentation",
           "Summary": "Multiple industry-standard security certifications are maintained.",
           "Reference": "Security Compliance Report, Page 12"
         }
       },
       {
+        id: "SEC-002",
+        question: "Data Protection",
         prompt: "How does the vendor handle data encryption and protection?",
         response: {
           "Answer": "AES-256 encryption for data at rest and TLS 1.3 for data in transit.",
-          "Answer Quality": "Medium",
+          "Answer Quality": "ADEQUATE",
           "Answer Source": "Technical Documentation",
           "Summary": "Industry-standard encryption protocols are implemented.",
           "Reference": "Technical Specifications, Section 3.4"
         }
       },
       {
+        id: "INC-003",
+        question: "Incident Response",
         prompt: "What is the vendor's incident response plan?",
         response: {
           "Answer": "24/7 SOC team with defined incident response procedures and SLAs.",
-          "Answer Quality": "High",
+          "Answer Quality": "INADEQUATE",
           "Answer Source": "Operational Procedures",
           "Summary": "Comprehensive incident response framework is in place.",
           "Reference": "Security Policies, Chapter 5"

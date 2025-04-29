@@ -17,6 +17,8 @@ export interface ResponseData {
 }
 
 export interface ReportItem {
+  id: string;
+  question: string;
   prompt: string;
   response: ResponseData;
 }

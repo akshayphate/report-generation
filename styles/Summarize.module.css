@@ -314,19 +314,16 @@
   font-size: 0.9rem;
 }
 
-.high {
+.adequate {
   background-color: #e8f5e9;
   color: #2e7d32;
+  border: 1px solid #81c784;
 }
 
-.medium {
-  background-color: #fff3e0;
-  color: #f57c00;
-}
-
-.low {
+.inadequate {
   background-color: #ffebee;
   color: #c62828;
+  border: 1px solid #e57373;
 }
 
 @media (max-width: 768px) {

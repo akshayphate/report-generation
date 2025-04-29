@@ -74,6 +74,7 @@ export default function Summarize() {
   return (
     <div className={styles.container}>
       <div className={styles.topSection}>
+        <h1 className={styles.heading}>Third Party Risk Evaluation Service</h1>
         <div className={styles.uploadSection}>
           <div className={styles.uploadControls}>
             <div className={styles.uploadGroup}>

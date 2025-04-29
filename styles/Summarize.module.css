@@ -241,6 +241,27 @@
   font-size: 1.1rem;
 }
 
+.heading {
+  text-align: center;
+  color: #E31837;
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin-bottom: 2rem;
+  padding-bottom: 1rem;
+  position: relative;
+}
+
+.heading::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100px;
+  height: 3px;
+  background: linear-gradient(to right, transparent, #E31837, transparent);
+}
+
 @media (max-width: 768px) {
   .container {
     padding: 1rem;
@@ -267,5 +288,10 @@
 
   .reportHeader h2 {
     font-size: 1.8rem;
+  }
+
+  .heading {
+    font-size: 1.8rem;
+    margin-bottom: 1.5rem;
   }
 } 

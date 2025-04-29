@@ -262,6 +262,73 @@
   background: linear-gradient(to right, transparent, #E31837, transparent);
 }
 
+.reportItem {
+  background-color: white;
+  border-radius: 12px;
+  padding: 2rem;
+  margin-bottom: 2rem;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  border: 1px solid #e0e0e0;
+}
+
+.prompt {
+  color: #333;
+  font-size: 1.3rem;
+  font-weight: 600;
+  margin-bottom: 1.5rem;
+}
+
+.responseTable {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.responseTable table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.responseTable td {
+  padding: 1rem;
+  border-bottom: 1px solid #eee;
+  line-height: 1.6;
+}
+
+.responseTable tr:last-child td {
+  border-bottom: none;
+}
+
+.label {
+  width: 120px;
+  color: #666;
+  font-weight: 500;
+  vertical-align: top;
+}
+
+.quality {
+  display: inline-block;
+  padding: 0.3rem 1rem;
+  border-radius: 50px;
+  font-weight: 500;
+  font-size: 0.9rem;
+}
+
+.high {
+  background-color: #e8f5e9;
+  color: #2e7d32;
+}
+
+.medium {
+  background-color: #fff3e0;
+  color: #f57c00;
+}
+
+.low {
+  background-color: #ffebee;
+  color: #c62828;
+}
+
 @media (max-width: 768px) {
   .container {
     padding: 1rem;
@@ -293,5 +360,22 @@
   .heading {
     font-size: 1.8rem;
     margin-bottom: 1.5rem;
+  }
+
+  .reportItem {
+    padding: 1.5rem;
+  }
+
+  .prompt {
+    font-size: 1.1rem;
+    margin-bottom: 1rem;
+  }
+
+  .responseTable td {
+    padding: 0.8rem;
+  }
+
+  .label {
+    width: 100px;
   }
 } 

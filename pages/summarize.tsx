@@ -1,12 +1,12 @@
 import { useState, useRef } from 'react';
 import styles from '../styles/Summarize.module.css';
 import { ReportService } from '../services/reportService';
-import { FileData, QuestionAnswer } from '../types/report';
+import { FileData, ReportItem } from '../types/report';
 
 export default function Summarize() {
   const [questionnaire, setQuestionnaire] = useState<FileData | null>(null);
   const [evidence, setEvidence] = useState<FileData[]>([]);
-  const [report, setReport] = useState<QuestionAnswer[]>([]);
+  const [report, setReport] = useState<ReportItem[]>([]);
   const [isGenerating, setIsGenerating] = useState(false);
   const [showReport, setShowReport] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -134,10 +134,39 @@ export default function Summarize() {
               </button>
             </div>
             <div className={styles.reportContent}>
-              {report.map((qa, index) => (
-                <div key={index} className={styles.qaItem}>
-                  <h3>Q: {qa.question}</h3>
-                  <p>A: {qa.answer}</p>
+              {report.map((item, index) => (
+                <div key={index} className={styles.reportItem}>
+                  <h3 className={styles.prompt}>Q: {item.prompt}</h3>
+                  <div className={styles.responseTable}>
+                    <table>
+                      <tbody>
+                        <tr>
+                          <td className={styles.label}>Answer:</td>
+                          <td>{item.response.Answer}</td>
+                        </tr>
+                        <tr>
+                          <td className={styles.label}>Quality:</td>
+                          <td>
+                            <span className={`${styles.quality} ${styles[item.response["Answer Quality"].toLowerCase()]}`}>
+                              {item.response["Answer Quality"]}
+                            </span>
+                          </td>
+                        </tr>
+                        <tr>
+                          <td className={styles.label}>Source:</td>
+                          <td>{item.response["Answer Source"]}</td>
+                        </tr>
+                        <tr>
+                          <td className={styles.label}>Summary:</td>
+                          <td>{item.response.Summary}</td>
+                        </tr>
+                        <tr>
+                          <td className={styles.label}>Reference:</td>
+                          <td>{item.response.Reference}</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
                 </div>
               ))}
             </div>

@@ -1,36 +1,48 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-
-type ResponseData = {
-  message: string;
-  data?: any;
-  error?: string;
-};
+import { GenerateReportResponse } from '../../types/report';
 
 export default async function handler(
   req: NextApiRequest,
-  res: NextApiResponse<ResponseData>
+  res: NextApiResponse<GenerateReportResponse>
 ) {
   if (req.method !== 'POST') {
-    return res.status(405).json({ message: 'Method not allowed' });
+    return res.status(405).json({ message: 'Method not allowed', data: [] });
   }
 
   try {
     const { questionnaire, evidence } = req.body;
 
-    // Here you would typically:
-    // 1. Process the uploaded files
-    // 2. Generate the report
-    // 3. Return the results
-
-    // For now, let's return mock data
+    // Mock data with the new structure
     const mockReport = [
       {
-        question: "What is the main purpose of the document?",
-        answer: "The document outlines the requirements and specifications for the project."
+        prompt: "What are the vendor's security certifications and compliance standards?",
+        response: {
+          "Answer": "The vendor holds SOC 2 Type II, ISO 27001, and PCI DSS certifications.",
+          "Answer Quality": "High",
+          "Answer Source": "Security Documentation",
+          "Summary": "Multiple industry-standard security certifications are maintained.",
+          "Reference": "Security Compliance Report, Page 12"
+        }
       },
       {
-        question: "What are the key deliverables?",
-        answer: "The key deliverables include a complete web application with user authentication and data processing capabilities."
+        prompt: "How does the vendor handle data encryption and protection?",
+        response: {
+          "Answer": "AES-256 encryption for data at rest and TLS 1.3 for data in transit.",
+          "Answer Quality": "Medium",
+          "Answer Source": "Technical Documentation",
+          "Summary": "Industry-standard encryption protocols are implemented.",
+          "Reference": "Technical Specifications, Section 3.4"
+        }
+      },
+      {
+        prompt: "What is the vendor's incident response plan?",
+        response: {
+          "Answer": "24/7 SOC team with defined incident response procedures and SLAs.",
+          "Answer Quality": "High",
+          "Answer Source": "Operational Procedures",
+          "Summary": "Comprehensive incident response framework is in place.",
+          "Reference": "Security Policies, Chapter 5"
+        }
       }
     ];
 
@@ -42,7 +54,8 @@ export default async function handler(
     console.error('Error generating report:', error);
     return res.status(500).json({ 
       message: 'Error generating report',
-      error: 'Internal server error' 
+      error: 'Internal server error',
+      data: [] 
     });
   }
 } 

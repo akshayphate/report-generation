@@ -8,23 +8,25 @@ export interface FileData {
   file: File;
 }
 
-export interface ResponseData {
-  Answer: string;
-  "Answer Quality": string;
-  "Answer Source": string;
-  Summary: string;
-  Reference: string;
-}
-
-export interface ReportItem {
+export interface ProcessedQuestion {
   id: string;
   question: string;
   prompt: string;
-  response: ResponseData;
+}
+
+export interface ReportItem {
+  id?: string;
+  question: string;
+  answer: string;
+  answerQuality: string;
+  source: string;
+  summary: string;
+  reference: string;
 }
 
 export interface GenerateReportResponse {
-  message: string;
-  data: ReportItem[];
+  message?: string;
+  report?: ReportItem[];
   error?: string;
+  data?: any;
 } 

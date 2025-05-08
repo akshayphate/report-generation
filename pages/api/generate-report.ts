@@ -1,67 +1,147 @@
-import type { NextApiRequest, NextApiResponse } from 'next';
-import { GenerateReportResponse } from '../../types/report';
+import formidable from 'formidable';
+import fs from 'fs';
+import { NextApiRequest, NextApiResponse } from 'next';
+import { GenerateReportResponse, ProcessedQuestion, ReportItem } from '../../types/report';
 
-export default async function handler(
-  req: NextApiRequest,
-  res: NextApiResponse<GenerateReportResponse>
-) {
+// Disable body parsing, we'll handle the form data manually
+export const config = {
+  api: {
+    bodyParser: false,
+  },
+};
+
+export default async function handler(req: NextApiRequest, res: NextApiResponse<GenerateReportResponse>) {
   if (req.method !== 'POST') {
-    return res.status(405).json({ message: 'Method not allowed', data: [] });
+    return res.status(405).json({ error: 'Method not allowed' });
   }
 
   try {
-    const { questionnaire, evidence } = req.body;
+    const form = new formidable.IncomingForm({
+      multiples: true,
+    });
+    
+    const { fields, files } = await new Promise<{fields: formidable.Fields, files: formidable.Files}>((resolve, reject) => {
+      form.parse(req, (err, fields, files) => {
+        if (err) reject(err);
+        resolve({ fields, files });
+      });
+    });
 
-    // Mock data with the new structure
-    const mockReport = [
-      {
-        id: "CERT-001",
-        question: "Security Certifications",
-        prompt: "What are the vendor's security certifications and compliance standards?",
-        response: {
-          "Answer": "The vendor holds SOC 2 Type II, ISO 27001, and PCI DSS certifications.",
-          "Answer Quality": "ADEQUATE",
-          "Answer Source": "Security Documentation",
-          "Summary": "Multiple industry-standard security certifications are maintained.",
-          "Reference": "Security Compliance Report, Page 12"
-        }
-      },
-      {
-        id: "SEC-002",
-        question: "Data Protection",
-        prompt: "How does the vendor handle data encryption and protection?",
-        response: {
-          "Answer": "AES-256 encryption for data at rest and TLS 1.3 for data in transit.",
-          "Answer Quality": "ADEQUATE",
-          "Answer Source": "Technical Documentation",
-          "Summary": "Industry-standard encryption protocols are implemented.",
-          "Reference": "Technical Specifications, Section 3.4"
-        }
-      },
-      {
-        id: "INC-003",
-        question: "Incident Response",
-        prompt: "What is the vendor's incident response plan?",
-        response: {
-          "Answer": "24/7 SOC team with defined incident response procedures and SLAs.",
-          "Answer Quality": "INADEQUATE",
-          "Answer Source": "Operational Procedures",
-          "Summary": "Comprehensive incident response framework is in place.",
-          "Reference": "Security Policies, Chapter 5"
-        }
+    // Get the evidence files
+    const evidenceFiles: formidable.File[] = [];
+    const evidenceCount = parseInt(fields.evidenceCount as string, 10) || 0;
+    
+    // Collect all evidence files
+    for (let i = 0; i < evidenceCount; i++) {
+      const evidence = files[`evidence-${i}`] as formidable.File;
+      if (evidence) {
+        evidenceFiles.push(evidence);
       }
-    ];
+    }
+    
+    // Get the questions JSON
+    const questionsJson = JSON.parse(fields.questions as string) as ProcessedQuestion[];
+    
+    if (evidenceFiles.length === 0) {
+      return res.status(400).json({ error: 'No evidence files uploaded' });
+    }
 
+    if (!questionsJson || !Array.isArray(questionsJson)) {
+      return res.status(400).json({ error: 'Invalid questions format' });
+    }
+
+    // Process all evidence files
+    const evidenceContents: string[] = [];
+    for (const file of evidenceFiles) {
+      try {
+        const content = fs.readFileSync(file.filepath, 'utf8');
+        evidenceContents.push(content);
+      } catch (error) {
+        console.error(`Error reading evidence file ${file.originalFilename}:`, error);
+      }
+    }
+    
+    // Combine all evidence for processing
+    const combinedEvidence = evidenceContents.join('\n\n--- END OF DOCUMENT ---\n\n');
+    
+    // Call LLM component to generate answers for each question
+    const report = await generateLLMResponses(questionsJson, combinedEvidence);
+    
     return res.status(200).json({ 
       message: 'Report generated successfully',
-      data: mockReport 
+      report 
     });
   } catch (error) {
     console.error('Error generating report:', error);
     return res.status(500).json({ 
       message: 'Error generating report',
-      error: 'Internal server error',
-      data: [] 
+      error: 'Internal server error'
     });
   }
+}
+
+/**
+ * Call LLM to generate answers for each question based on the evidence
+ * @param questions Array of question objects with id, question, and prompt
+ * @param evidenceContent Combined content of all evidence files
+ * @returns Promise with array of question and answer objects
+ */
+async function generateLLMResponses(questions: ProcessedQuestion[], evidenceContent: string): Promise<ReportItem[]> {
+  // This would be replaced with actual LLM API calls
+  // For now, we'll simulate the LLM responses
+  
+  const responses: ReportItem[] = [];
+  
+  for (const question of questions) {
+    // Simulate an API call to LLM
+    const answer = await mockLLMCall(question, evidenceContent);
+    
+    responses.push({
+      question: question.question,
+      answer: answer.content,
+      answerQuality: answer.quality,
+      source: answer.source,
+      summary: answer.summary,
+      reference: answer.reference
+    });
+  }
+  
+  return responses;
+}
+
+/**
+ * Mock function to simulate LLM API call
+ * This would be replaced with actual calls to your LLM component
+ */
+async function mockLLMCall(question: ProcessedQuestion, evidenceContent: string) {
+  // Simulate processing time
+  await new Promise(resolve => setTimeout(resolve, 500));
+  
+  // For demonstration purposes only - updated with the required fields
+  const responses = [
+    { 
+      content: "YES", 
+      quality: "ADEQUATE",
+      source: "Security Documentation v2.3",
+      summary: "The vendor has implemented all required security controls as specified in the compliance framework.",
+      reference: "Section 4.2, Page 18"
+    },
+    { 
+      content: "YES", 
+      quality: "ADEQUATE",
+      source: "Technical Specifications",
+      summary: "All encryption requirements are met with AES-256 for data at rest and TLS 1.3 for data in transit.",
+      reference: "Security Architecture, Page 27"
+    },
+    { 
+      content: "NO", 
+      quality: "INADEQUATE",
+      source: "Security Assessment Report",
+      summary: "The evidence does not demonstrate sufficient implementation of the required controls.",
+      reference: "Risk Assessment Section, Page 12"
+    }
+  ];
+  
+  // Randomly select a response
+  return responses[Math.floor(Math.random() * responses.length)];
 } 

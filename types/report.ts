@@ -8,12 +8,6 @@ export interface FileData {
   file: File;
 }
 
-export interface ProcessedQuestion {
-  id: string;
-  question: string;
-  prompt: string;
-}
-
 export interface ReportItem {
   id?: string;
   question: string;

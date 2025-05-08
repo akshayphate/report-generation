@@ -1,7 +1,7 @@
 import formidable from 'formidable';
 import fs from 'fs';
 import { NextApiRequest, NextApiResponse } from 'next';
-import { GenerateReportResponse, ProcessedQuestion, ReportItem } from '../../types/report';
+import { GenerateReportResponse, ReportItem } from '../../types/report';
 
 // Disable body parsing, we'll handle the form data manually
 export const config = {
@@ -40,7 +40,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
     }
     
     // Get the questions JSON
-    const questionsJson = JSON.parse(fields.questions as string) as ProcessedQuestion[];
+    const questionsJson = JSON.parse(fields.questions as string);
     
     if (evidenceFiles.length === 0) {
       return res.status(400).json({ error: 'No evidence files uploaded' });
@@ -86,7 +86,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
  * @param evidenceContent Combined content of all evidence files
  * @returns Promise with array of question and answer objects
  */
-async function generateLLMResponses(questions: ProcessedQuestion[], evidenceContent: string): Promise<ReportItem[]> {
+async function generateLLMResponses(questions: any[], evidenceContent: string): Promise<ReportItem[]> {
   // This would be replaced with actual LLM API calls
   // For now, we'll simulate the LLM responses
   
@@ -113,7 +113,7 @@ async function generateLLMResponses(questions: ProcessedQuestion[], evidenceCont
  * Mock function to simulate LLM API call
  * This would be replaced with actual calls to your LLM component
  */
-async function mockLLMCall(question: ProcessedQuestion, evidenceContent: string) {
+async function mockLLMCall(question: any, evidenceContent: string) {
   // Simulate processing time
   await new Promise(resolve => setTimeout(resolve, 500));
   

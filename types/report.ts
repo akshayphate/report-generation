@@ -23,4 +23,11 @@ export interface GenerateReportResponse {
   report?: ReportItem[];
   error?: string;
   data?: any;
+}
+
+export interface FileWithBase64 {
+  name: string;
+  type: string;
+  size: number;
+  base64: string;
 } 

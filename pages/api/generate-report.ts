@@ -1,14 +1,10 @@
-import formidable from 'formidable';
-import fs from 'fs';
 import { NextApiRequest, NextApiResponse } from 'next';
-import { GenerateReportResponse, ReportItem } from '../../types/report';
+import { GenerateReportResponse, ReportItem, FileWithBase64 } from '../../types/report';
 
-// Disable body parsing, we'll handle the form data manually
-export const config = {
-  api: {
-    bodyParser: false,
-  },
-};
+interface RequestBody {
+  evidenceFiles: FileWithBase64[];
+  questions: any[];
+}
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse<GenerateReportResponse>) {
   if (req.method !== 'POST') {
@@ -16,48 +12,39 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
   }
 
   try {
-    const form = new formidable.IncomingForm({
-      multiples: true,
-    });
+    // Extract data from request body
+    const { evidenceFiles, questions } = req.body as RequestBody;
     
-    const { fields, files } = await new Promise<{fields: formidable.Fields, files: formidable.Files}>((resolve, reject) => {
-      form.parse(req, (err, fields, files) => {
-        if (err) reject(err);
-        resolve({ fields, files });
-      });
-    });
-
-    // Get the evidence files
-    const evidenceFiles: formidable.File[] = [];
-    const evidenceCount = parseInt(fields.evidenceCount as string, 10) || 0;
-    
-    // Collect all evidence files
-    for (let i = 0; i < evidenceCount; i++) {
-      const evidence = files[`evidence-${i}`] as formidable.File;
-      if (evidence) {
-        evidenceFiles.push(evidence);
-      }
+    if (!evidenceFiles || !questions) {
+      return res.status(400).json({ error: 'Missing required data' });
     }
-    
-    // Get the questions JSON
-    const questionsJson = JSON.parse(fields.questions as string);
-    
+
     if (evidenceFiles.length === 0) {
       return res.status(400).json({ error: 'No evidence files uploaded' });
     }
 
-    if (!questionsJson || !Array.isArray(questionsJson)) {
+    if (!Array.isArray(questions)) {
       return res.status(400).json({ error: 'Invalid questions format' });
     }
 
-    // Process all evidence files
+    // Extract content from base64 evidence files
     const evidenceContents: string[] = [];
     for (const file of evidenceFiles) {
       try {
-        const content = fs.readFileSync(file.filepath, 'utf8');
-        evidenceContents.push(content);
+        // Extract the base64 content (remove data URL prefix if present)
+        // For text files, convert to readable content, for binary files, just use placeholder
+        if (file.type.startsWith('text/') || file.type === 'application/json') {
+          const base64Data = file.base64.split(',')[1]; // Remove data URL prefix
+          const content = Buffer.from(base64Data, 'base64').toString('utf-8');
+          evidenceContents.push(content);
+        } else {
+          // For non-text files like PDF, we'd need a proper parser
+          // Here we just add a placeholder
+          evidenceContents.push(`[Contents of ${file.name} - ${file.type}]`);
+        }
       } catch (error) {
-        console.error(`Error reading evidence file ${file.originalFilename}:`, error);
+        console.error(`Error processing evidence file ${file.name}:`, error);
+        evidenceContents.push(`[Failed to process ${file.name}]`);
       }
     }
     
@@ -65,7 +52,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
     const combinedEvidence = evidenceContents.join('\n\n--- END OF DOCUMENT ---\n\n');
     
     // Call LLM component to generate answers for each question
-    const report = await generateLLMResponses(questionsJson, combinedEvidence);
+    const report = await generateLLMResponses(questions, combinedEvidence);
     
     return res.status(200).json({ 
       message: 'Report generated successfully',

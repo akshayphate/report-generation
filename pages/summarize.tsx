@@ -15,14 +15,16 @@ export default function Summarize() {
 
   const handleQuestionnaireUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
-      setQuestionnaire(e.target.files[0]);
+      const file = e.target.files[0];
+      setQuestionnaire(file);
       setError(null);
     }
   };
 
   const handleEvidenceUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
-      setEvidence(Array.from(e.target.files));
+      const files = Array.from(e.target.files);
+      setEvidence(files);
       setError(null);
     }
   };
@@ -52,8 +54,12 @@ export default function Summarize() {
       setLoading(true);
       setError(null);
 
-      // Use the report service to generate the report
-      const { data } = await ReportService.generateReport(questionnaire, evidence);
+      // Use the report service - it will handle the base64 conversion internally
+      const { data } = await ReportService.generateReport(
+        questionnaire,
+        evidence
+      );
+      
       setReport(data);
       setShowReport(true);
     } catch (error) {

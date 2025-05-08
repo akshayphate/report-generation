@@ -2,13 +2,15 @@
  * Service to handle questionnaire file processing
  * Using mock data instead of API calls
  */
+import { FileWithBase64 } from '../types/report';
 
 /**
  * Processes the questionnaire file and extracts questions
- * @param questionnaireFile The uploaded questionnaire file
+ * Works with either File objects or FileWithBase64 objects
+ * @param questionnaireFile The uploaded questionnaire file or base64 representation
  * @returns JSON array with id, question, and prompt
  */
-export const processQuestionnaire = async (questionnaireFile: File): Promise<any[]> => {
+export const processQuestionnaire = async (questionnaireFile: File | FileWithBase64 | any): Promise<any[]> => {
   try {
     console.log(`Processing questionnaire file: ${questionnaireFile.name}`);
     

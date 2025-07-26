@@ -154,6 +154,22 @@
     margin-bottom: 2rem;
 }
 
+.uploadConfirmation {
+    background: linear-gradient(135deg, #d4edda, #c3e6cb);
+    border: 1px solid #c3e6cb;
+    color: #155724;
+    padding: 1rem;
+    border-radius: var(--border-radius);
+    text-align: center;
+    margin-bottom: 2rem;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
 
 /* 5. REPORT & CONTENT DISPLAY */
 .results-container {
@@ -161,10 +177,45 @@
     padding: 2rem;
     border-radius: var(--border-radius);
     box-shadow: var(--shadow-md);
-    margin-top: 3rem;
+    margin: 3rem auto;
     width: 100%; 
-    max-width: 100%; /* Use full width available */
+    max-width: 1400px; /* Center with max width */
     overflow-x: hidden; /* Prevent horizontal scrolling */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.results-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid var(--wf-light-gray);
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.results-header h2 {
+    margin: 0;
+    color: var(--wf-red);
+    font-size: 1.8rem;
+    font-weight: bold;
+}
+
+.total-time {
+    background: linear-gradient(135deg, var(--wf-red), var(--wf-gold));
+    color: white;
+    padding: 0.75rem 1.5rem;
+    border-radius: 25px;
+    font-weight: 600;
+    font-size: 1rem;
+    box-shadow: 0 2px 8px rgba(215, 30, 40, 0.3);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
 }
 
 
@@ -173,6 +224,37 @@
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
     gap: 1.5rem;
+    width: 100%;
+    max-width: 100%;
+}
+
+/* Responsive grid adjustments */
+@media (max-width: 768px) {
+    .cards-view-container {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    
+    .results-header {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .total-time {
+        font-size: 0.9rem;
+        padding: 0.5rem 1rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .results-container {
+        padding: 1rem;
+        margin: 1rem auto;
+    }
+    
+    .results-header h2 {
+        font-size: 1.5rem;
+    }
 }
 
 

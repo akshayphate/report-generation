@@ -89,6 +89,7 @@ const FullVendorAnalysis: React.FC = () => {
     const [processingProgress, setProcessingProgress] = useState<ProcessingProgress | null>(null);
     const [startTime, setStartTime] = useState<number | null>(null);
     const [elapsedTime, setElapsedTime] = useState<number>(0);
+    const [uploadConfirmation, setUploadConfirmation] = useState<string | null>(null);
     const roles = ['tprss-inquire'];
 
 
@@ -124,6 +125,7 @@ const FullVendorAnalysis: React.FC = () => {
         setShowZipContents(false);
         setIsViewingContents(false);
         setError(null);
+        setUploadConfirmation(`✅ File "${zipFile.name}" uploaded successfully!`);
         
         handleZipFileChange(zipFile);
 
@@ -594,6 +596,13 @@ const FullVendorAnalysis: React.FC = () => {
         setProcessedZipData(null);
         setQuestionnaireFile(null);
         setIsProcessingAllowed(false); // Reset the processing permission
+        setUploadConfirmation(null);
+        setAnalyzingProgress(0);
+        setTotalSteps(0);
+        setCurrentStep(0);
+        setProcessingProgress(null);
+        setStartTime(null);
+        setElapsedTime(0);
     };
 
 
@@ -720,9 +729,6 @@ return (
                                         <strong>Compress:</strong> Zip the folder structure and zipped file is the upload for full vendor assessment.
                                     </li>
                                 </ol>
-                                <p className={styles.instructionsEmphasis}>
-                                    <strong>Important:</strong> Assessment results depends heavily on the correct folder structure in zip and the evidences provided. As of today, this platform support max 10 MB size of total evidence files per domain.
-                                </p>
                             </div>
 
                             <div className={styles.uploadSection}>
@@ -741,6 +747,12 @@ return (
                             {error && (
                                 <div className={styles.alertDanger} role="alert">
                                     {error}
+                                </div>
+                            )}
+
+                            {uploadConfirmation && (
+                                <div className={styles.uploadConfirmation} role="alert">
+                                    {uploadConfirmation}
                                 </div>
                             )}
 
@@ -817,6 +829,7 @@ return (
                 <ReportDisplay
                     results={report}
                     viewMode={viewMode}
+                    totalTime={elapsedTime}
                 />
             )}
         </div>

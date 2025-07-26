@@ -31,15 +31,31 @@ interface EnhancedReportItem {
 interface ReportDisplayProps {
     results: EnhancedReportItem[];
     viewMode: 'table' | 'card';
+    totalTime?: number; // New prop for total time in milliseconds
 }
 
 
-export const ReportDisplay: React.FC<ReportDisplayProps> = ({ results, viewMode }) => {
+export const ReportDisplay: React.FC<ReportDisplayProps> = ({ results, viewMode, totalTime }) => {
+    
+    // Format total time for display
+    const formatTotalTime = (ms: number) => {
+        const seconds = Math.floor(ms / 1000);
+        const minutes = Math.floor(seconds / 60);
+        const remainingSeconds = seconds % 60;
+        return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+    };
     
     if (!results || results.length === 0) {
         return (
             <div className={styles['results-container']}>
-                <h2>Generated Report</h2>
+                <div className={styles['results-header']}>
+                    <h2>Generated Report</h2>
+                    {totalTime && (
+                        <div className={styles['total-time']}>
+                            ⏱️ Total Time: {formatTotalTime(totalTime)}
+                        </div>
+                    )}
+                </div>
                 <div className={styles['empty-state']}>
                     <p>No assessment results available. Please upload evidence files and generate a report.</p>
                 </div>
@@ -153,6 +169,14 @@ export const ReportDisplay: React.FC<ReportDisplayProps> = ({ results, viewMode 
 
     return (
         <div className={styles['results-container']}>
+            <div className={styles['results-header']}>
+                <h2>Generated Report</h2>
+                {totalTime && (
+                    <div className={styles['total-time']}>
+                        ⏱️ Total Time: {formatTotalTime(totalTime)}
+                    </div>
+                )}
+            </div>
             {viewMode === 'card' ?
                 (<div className={styles['cards-view-container']}>{results.map(renderReportCard)}</div>) :
                 renderTableView()

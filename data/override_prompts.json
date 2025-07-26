@@ -1,0 +1,134 @@
+[
+    {
+        "Questionnaire_Name":"INC001",
+        "Prompt":"1. Does your organization have an asset management policy, procedure, or standard for storing, managing, or transporting sensitive client assets (e.g., paper files, account statements, cash, credit cards, checks) with following policy feature: Requirements for asset control tagging\/labeling?",
+        "ID":"1",
+        "Final_Prompt":"Does your organization have an physical record management policy, procedure, or standard for storing, managing, or transporting sensitive client physical records (e.g., paper files, account statements, cash, credit cards, checks) with following policy feature: Requirements for physical records control tagging\/labeling?"
+    },
+    {
+        "Questionnaire_Name":"INC001",
+        "Prompt":"2. Does your organization have an asset management policy, procedure, or standard for storing, managing, or transporting sensitive client assets (e.g., paper files, account statements, cash, credit cards, checks) with following policy feature: Requirements to document the physical location of assets?",
+        "ID":"2",
+        "Final_Prompt":"Does your organization have a physical record management policy, procedure, or standard for storing, managing, or transporting sensitive client physical records (e.g., paper files, account statements, cash, credit cards, checks) with following policy feature: Requirements to document the physical location of physical record assets?  If the evidence only mentions general `client assets` or focuses on digital/electronic records, the Answer_Quality must be marked as Inadequate, regardless of other content."
+    },
+    {
+        "Questionnaire_Name":"INC001",
+        "Prompt":"3. Does your organization have an asset management policy, procedure, or standard for storing, managing, or transporting sensitive client assets (e.g., paper files, account statements, cash, credit cards, checks) with following policy feature: Requirements for assets to have a designated asset owner?",
+        "ID":"3",
+        "Final_Prompt":"Does your organization have a physical record management policy, procedure, or standard for storing, managing, or transporting sensitive client physical records (e.g., paper files, account statements, cash, credit cards, checks) with following policy feature: Requirements for physical records to have a designated physical records asset owner?"
+    },
+    {
+        "Questionnaire_Name":"INC001",
+        "Prompt":"4. Does your organization have an asset management policy, procedure, or standard for storing, managing, or transporting sensitive client assets (e.g., paper files, account statements, cash, credit cards, checks) with following policy feature: Requirements for asset classification?",
+        "ID":"4",
+        "Final_Prompt":"Does your organization have a physical record management policy, procedure, or standard for storing, managing, or transporting sensitive client physical records (e.g., paper files, account statements, cash, credit cards, checks) with following policy feature: Requirements for physical record asset classification?"
+    },
+    {
+        "Questionnaire_Name":"INC001",
+        "Prompt":"5. Does your organization have an asset management policy, procedure, or standard for storing, managing, or transporting sensitive client assets (e.g., paper files, account statements, cash, credit cards, checks) with following policy feature: Requirements for authorizing access to sensitive physical client assets?",
+        "ID":"5",
+        "Final_Prompt":"Does your organization have an physical record management policy, procedure, or standard for storing, managing, or transporting sensitive client physical records (e.g., paper files, account statements, cash, credit cards, checks) with following policy feature: Requirements for authorizing access to sensitive physical records of client? Strictly assess whether the evidence explicitly refers to physical client records (e.g. paper files, printed account statements, physical checks); If the evidence only mentions general `client assets` or focuses on digital/electronic records, the Answer_Quality must be marked as Inadequate, regardless of other content."
+    },
+    {
+        "Questionnaire_Name":"INC001",
+        "Prompt":"6. Does your organization have an asset management policy, procedure, or standard for storing, managing, or transporting sensitive client assets (e.g., paper files, account statements, cash, credit cards, checks) with following policy feature: Requirements to physically secure sensitive client assets (e.g., in locked files, rooms, or collection bins)?",
+        "ID":"6",
+        "Final_Prompt":"Does your organization have an physical record management policy, procedure, or standard for storing, managing, or transporting sensitive client physical records (e.g., paper files, account statements, cash, credit cards, checks) with following policy feature: Requirements to physically secure sensitive client physical record assets (e.g., in locked files, rooms, or collection bins)? If the evidence only mentions general `client assets` or focuses on digital/electronic records, the Answer_Quality must be marked as Inadequate, regardless of other content."
+    },
+    {
+        "Questionnaire_Name":"INC001",
+        "Prompt":"7. Does your organization have an asset management policy, procedure, or standard for storing, managing, or transporting sensitive client assets (e.g., paper files, account statements, cash, credit cards, checks) with following policy feature: Requirements to prevent the unapproved removal of client assets from the premises?",
+        "ID":"7",
+        "Final_Prompt":"Does your organization have a physical record management policy, procedure, or standard for storing, managing, or transporting sensitive client physical records (e.g., paper files, account statements, cash, credit cards, checks) with following policy feature: Requirements to prevent the unapproved removal of physical client record from the premises?" 
+    },
+    {
+        "Questionnaire_Name":"PES001",
+        "Prompt":"4. Does your organization have a physical security and environmental policy, procedure, or standard for all in-scope facility locations (e.g., offices and datacenters) that collect, store, process, handle, or transfer client data with following policy feature: Reference the incident management policies and procedures in the event of a breach?",
+        "ID":"4",
+        "Final_Prompt":"Does your organization have a physical security and environmental policy, procedure, or standard for all in-scope facility locations (e.g., offices and datacenters) that collect, store, process, handle, or transfer client data with following policy feature: Reference the incident management policies and procedures in the event of a breach, specifically how these policies and procedures address physical security breaches?"
+    },
+    {
+        "Questionnaire_Name":"ENC001",
+        "Prompt":"2. Does your organization have an encryption policy, procedure, or standard with following policy feature: Encryption requirements by data type?",
+        "ID":"2",
+        "Final_Prompt":"Does your organization have an encryption policy, procedure, or standard with following policy feature: Encryption requirements by state of data?"
+    },
+    {
+        "Questionnaire_Name":"CM001",
+        "Prompt":"1. Does your organization have a change management policy, procedure, or standard with following policy feature: Defined roles and responsibilities?",
+        "ID":"1",
+        "Final_Prompt":"Does your organization have a documented change management policy, procedure, or standard that clearly defines the roles and responsibilities of relevant stakeholders across the change lifecycle - including who is responsible for initiating, logging, reviewing, approving, implementing, and closing change requests?"
+    },
+    {
+        "Questionnaire_Name":"TPR002",
+        "Prompt":"9. Does your organization have a subcontractor risk management policy, procedure, or standard with following policy feature: Roles and responsibilities for subcontractor management?",
+        "ID":"9",
+        "Final_Prompt":"Does your organization have a documented subcontractor risk management policy, procedure, or standard that clearly defines the Roles and responsibilities of stakeholders involved in the selection, onboarding, monitoring, and offboarding of subcontractors?"
+    },
+    {
+        "Questionnaire_Name":"BC001",
+        "Prompt":"2. Does your organization have a business continuity planning and disaster recovery (BCP/DR) policy, procedure, or standard for all in-scope facility locations (e.g., offices and datacenters) that collect, store, process, handle, or transfer client data with following policy feature: Business impact analysis that is reviewed and approved by senior management at least every 12 months and after any significant changes?",
+        "ID":"2",
+        "Final_Prompt":"Does your organization have a documented business continuity and disaster recovery (BCP/DR) policy that includes conducting a Business Impact Analysis (BIA) for all in-scope facilities (e.g., offices, datacenters handling client data), with the BIA reviewed and approved by senior management at least annually and after any significant change?"
+    },
+    {
+        "Questionnaire_Name":"BC001",
+        "Prompt":"5. Does your organization have a business continuity planning and disaster recovery (BCP/DR) policy, procedure, or standard for all in-scope facility locations (e.g., offices and datacenters) that collect, store, process, handle, or transfer client data with following policy feature: Business restoration procedure for all in-scope facility locations?",
+        "ID":"5",
+        "Final_Prompt":"Does your organization have a business continuity and disaster recovery (BCP/DR) policy covering all in-scope facility locations, and within that, is there a defined, tested, and location-specific business restoration procedure to ensure timely recovery of operations?"
+    },
+    {
+        "Questionnaire_Name":"IM001",
+        "Prompt":"3. Does your organization have an incident management policy, procedure, standard, or plan with following policy feature: Requirements to detect and prevent incidents?",
+        "ID":"3",
+        "Final_Prompt":"Provide details of your organizations's incident management framework, including any policies, procedures, standards, or plans in place. In your response, specifically describe how the framework enables detection and prevention of incidents, including any tools, processes, or monitoring mechanisms used to proactively identify and mitigate potential issues?"
+    },
+    {
+        "Questionnaire_Name":"EDM006",
+        "Prompt":"2. Does your organization have a data retention policy, procedure, or standard with following policy feature: Types and classifications of all records, data, and information that are subject to data retention requirements?",
+        "ID":"2",
+        "Final_Prompt":"Does the document specify data retention requirements or durations based on the type of classification of data, records, or information?"
+    },
+    {
+        "Questionnaire_Name":"IRC001",
+        "Prompt":"3. Does your organization have an information security risk management policy, procedure, or standard with following policy feature: Requirements for performing risk assessments?",
+        "ID":"3",
+        "Final_Prompt":"Does your organization define specific requirments or criteria for performing information security risk assessments as part of its risk managment policy, procedure or standard.? Look for details such as assessment frequency , scope, methodology, responsible roles, risk acceptance thresholds, and triggering events."
+    },
+    {
+        "Questionnaire_Name":"LAM013",
+        "Prompt":"1. Does your organization require multifactor authentication (MFA) for in-scope internet-facing applications, systems and data?",
+        "ID":"1",
+        "Final_Prompt":"Does your organization require multifactor authentication (MFA) for in-scope internet-facing applications, systems and data? For this control, prioritize screenshot or configuration tool evidence over written documentation. Only visual evidence showing actual implementation will be considered Adequate, If no visual evidence is provided or provided visual evidence does not cover the control make Answer_Quality as Inadequate."
+    },
+    {
+        "Questionnaire_Name":"LAM023",
+        "Prompt":"1. Does your organization require multifactor authentication for all remote network access?",
+        "ID":"1",
+        "Final_Prompt":"Does your organization require multifactor authentication for all remote network access? For this control, prioritize screenshot or configuration tool evidence over written documentation. Only visual evidence showing actual implementation will be considered Adequate, If no visual evidence is provided or provided visual evidence does not cover the control make Answer_Quality as Inadequate."
+    },
+    {
+        "Questionnaire_Name":"LAM003",
+        "Prompt":"1. Does your organization have a process to de-provision or modify access of movers and leavers, including employees and subcontractors?",
+        "ID":"1",
+        "Final_Prompt":"Does your organization have a process to de-provision or modify access of movers and leavers, including employees and subcontractors? For this control, prioritize screenshot or configuration tool evidence over written documentation. Only visual evidence showing actual implementation will be considered Adequate, If no visual evidence is provided or provided visual evidence does not cover the control make Answer_Quality as Needs_Review."
+    },
+    {
+        "Questionnaire_Name":"ENC004",
+        "Prompt":"1. Does your organization use only non-deprecated encryption methods to encrypt client data in-transit on external networks (e.g., internet facing applications and connections) using the equivalent of TLS 1.2 or greater?",
+        "ID":"1",
+        "Final_Prompt":"Does your organization use only non-deprecated encryption methods to encrypt client data in-transit on external networks (e.g., internet facing applications and connections) using the equivalent of TLS 1.2 or greater? For this control, prioritize screenshot or configuration tool evidence over written documentation. Only visual evidence showing actual implementation will be considered Adequate, If no visual evidence is provided or provided visual evidence does not cover the control make Answer_Quality as Inadequate."
+    },
+    {
+        "Questionnaire_Name":"PES001",
+        "Prompt":"2. Does your organization have a physical security and environmental policy, procedure, or standard for all in-scope facility locations (e.g., offices and datacenters) that collect, store, process, handle, or transfer client data with following policy feature: Requirements for physical access?",
+        "ID":"2",
+        "Final_Prompt":"Does your organization have a documented physical security and environmental policy, procedure, or standard that clearly defines detailed requirements for physical access to all in-scope facilities (e.g., offices and datacenters) where client data is stored, processed, handled, or transferred?"
+    },
+    {
+        "Questionnaire_Name":"TR002",
+        "Prompt":"5. Does your organization maintain a training curriculum and require employees to complete annual general training as well as role based training with following policy feature: Compliance?",
+        "ID":"5",
+        "Final_Prompt":"Does your organization maintain a training curriculum and require employees to complete annual general compliance training, as well as role based compliance training, aligned to their job responsibilities?"
+    }
+]

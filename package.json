@@ -9,14 +9,28 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@progress/kendo-react-buttons": "^11.3.1",
+    "@progress/kendo-react-dialogs": "^11.3.1",
+    "@progress/kendo-react-excel-export": "^11.3.1",
+    "@progress/kendo-react-grid": "^11.3.1",
+    "@progress/kendo-react-upload": "^11.3.1",
+    "@progress/kendo-theme-default": "^11.2.0",
+    "axios": "^1.10.0",
+    "jspdf": "^3.0.1",
+    "logger": "^0.0.1",
+    "mammoth": "^1.9.1",
+    "next": "15.3.1",
+    "openai": "^5.8.2",
     "react": "^19.0.0",
+    "react-bootstrap": "^2.10.10",
     "react-dom": "^19.0.0",
-    "next": "15.3.1"
+    "uuid": "^11.1.0",
+    "xlsx": "^0.18.5"
   },
   "devDependencies": {
-    "typescript": "^5",
     "@types/node": "^20",
     "@types/react": "^19",
-    "@types/react-dom": "^19"
+    "@types/react-dom": "^19",
+    "typescript": "^5"
   }
 }

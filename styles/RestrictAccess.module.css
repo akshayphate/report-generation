@@ -1,0 +1,17 @@
+
+.restrictedAccess {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    text-align: center;
+    background-color: #fff5f5;
+    color: var(--wf-red);
+    font-family: 'Inter', 'Helvetica Neue', Arial, sans-serif;
+    font-size: 18px;
+    border: 1px solid var(--wf-red);
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 4px 6px rgba(215, 30, 40, 0.1);
+    margin: 20px;
+}

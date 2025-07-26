@@ -1,0 +1,773 @@
+/* ===============================================
+   Wells Fargo Vendor Assessment Theme
+   =============================================== */
+
+
+/* 1. ROOT & COLOR DEFINITIONS */
+/* Changed from :root for CTIP framework compatibility */
+.root {
+    --wf-red: #D41C2C;
+    --wf-gold: #FCCC44;
+    --wf-white: #FFFFFF;
+    --wf-black: #000000;
+    --wf-text: #333333;
+    --wf-background: #F8F9FA;
+    --wf-border-color: #dee2e6;
+    --wf-light-gray: #f1f1f1;
+
+
+    --success-green: #28a745;
+    --info-blue: #007bff;
+    /* A neutral blue for info, can be adjusted */
+    --warning-orange: #ffc107;
+
+
+    --shadow-sm: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    --shadow-md: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+    --border-radius: 0.375rem;
+}
+
+
+/* 2. GENERAL & LAYOUT STYLES */
+.container {
+    padding: 2rem;
+    background-color: var(--wf-background);
+    color: var(--wf-text);
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    transition: all 0.3s ease-in-out;
+}
+
+
+.pageTitle {
+    font-size: 2.5rem;
+    color: #000000;
+    font-weight: bold;
+    margin: 0;
+    text-align: center;
+}
+
+
+.sectionHeading {
+    font-size: 1.2rem;
+    color: var(--wf-text-secondary);
+    text-align: center;
+    margin-top: 0.5rem;
+    margin-bottom: 2rem;
+}
+
+
+/* Instructions Section */
+.instructions {
+    background-color: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    padding: 1.5rem 2rem;
+    margin-bottom: 2rem;
+    text-align: left;
+}
+
+
+.instructionsTitle {
+    font-size: 1.5rem;
+    color: #000000;
+    font-weight: bold;
+    margin-top: 0;
+    margin-bottom: 1rem;
+    border-bottom: 2px solid var(--wf-red);
+    padding-bottom: 0.5rem;
+}
+
+
+.instructionsList {
+    list-style-position: inside;
+    padding-left: 0;
+    margin-bottom: 1rem;
+}
+
+
+.instructionsList li {
+    margin-bottom: 0.75rem;
+    line-height: 1.6;
+}
+
+
+.instructionsEmphasis {
+    background-color: #fff3cd;
+    border-left: 4px solid #fccc44;
+    padding: 1rem;
+    font-style: italic;
+}
+
+
+/* 3. UPLOAD SECTION */
+.uploadSection {
+    background-color: var(--wf-white);
+    padding: 2rem;
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-md);
+    margin-bottom: 2rem;
+    text-align: center;
+}
+
+
+.uploadIcon {
+    font-size: 3rem;
+    color: var(--wf-red);
+    margin-bottom: 1rem;
+}
+
+
+.uploadText {
+    font-size: 1.2rem;
+    font-weight: 500;
+    color: var(--wf-text);
+}
+
+
+.uploadHint {
+    font-size: 0.9rem;
+    color: #6c757d;
+}
+
+
+
+/* 4. ACTION BUTTONS & ALERTS */
+.actionButtons {
+    display: flex;
+    justify-content: center;
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+    background-color: #fcf8e3;
+}
+
+
+.alertDanger {
+    background-color: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+    padding: 1rem;
+    border-radius: var(--border-radius);
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+
+/* 5. REPORT & CONTENT DISPLAY */
+.results-container {
+    background-color: var(--wf-white);
+    padding: 2rem;
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-md);
+    margin-top: 3rem;
+    width: 100%; 
+    max-width: 100%; /* Use full width available */
+    overflow-x: hidden; /* Prevent horizontal scrolling */
+}
+
+
+/* New Card View styles */
+.cards-view-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 1.5rem;
+}
+
+
+.report-card {
+    background-color: var(--wf-white);
+    border: 1px solid var(--wf-border-color);
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    transition: all 0.2s ease-in-out;
+}
+
+
+.report-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.12);
+}
+
+
+.report-card-content {
+    padding: 1.5rem;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+
+.report-field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--wf-light-gray);
+}
+
+
+.report-field:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
+
+.field-label {
+    font-weight: 600;
+    color: #6c757d;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.field-value {
+    color: #343a40;
+    font-size: 1rem;
+}
+
+
+.field-value.question {
+    font-weight: bold;
+    color: var(--wf-text);
+}
+
+
+/* Updated Table styles for better responsive behavior */
+.table-container {
+    width: 100%;
+    margin-top: 12px;
+    /* Remove overflow-x to prevent horizontal scrolling */
+}
+
+
+.assessment-table {
+    width: 100%;
+    border-collapse: separate; 
+    border-spacing: 0;
+    margin: 0;
+    border: 2px solid var(--wf-red);
+    border-radius: 8px;
+    table-layout: fixed; /* Fix layout to respect column widths */
+}
+
+
+.assessment-table thead th {
+    background-color: #F8D7DA;
+    color: #842029;
+    text-transform: uppercase;
+    font-size: 0.9rem;
+    letter-spacing: 0.03em;
+    padding: 12px 10px;
+    border-bottom: 2px solid var(--wf-red);
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    text-align: center;
+    vertical-align: middle;
+    font-weight: 600;
+}
+
+
+.assessment-table th,
+.assessment-table td {
+    border: 1px solid #ccc;
+    padding: 8px 10px; /* Slightly reduced padding to save space */
+    text-align: left;
+    overflow-wrap: break-word;
+    word-break: break-word; /* Improve text wrapping */
+    vertical-align: middle;
+    font-size: 0.95rem; /* Slightly reduce font size */
+}
+
+
+/* Adjust column widths to fit content better */
+.assessment-table th:nth-child(1) {width: 17%;}
+.assessment-table td:nth-child(1) {width: 17%; text-align: left;} /* Control column */
+
+
+.assessment-table th:nth-child(2) {width: 9%;}
+.assessment-table td:nth-child(2) {width: 9%; text-align: center;} /* Answer column */
+
+
+.assessment-table th:nth-child(3) {width: 12%;}
+.assessment-table td:nth-child(3) {width: 12%; text-align: center;} /* Answer Quality column */
+
+
+.assessment-table th:nth-child(4) {width: 30%;}
+.assessment-table td:nth-child(4) {width: 30%; text-align: left;} /* Answer Source column */
+
+
+.assessment-table th:nth-child(5) {width: 22%;}
+.assessment-table td:nth-child(5) {width: 22%; text-align: left;} /* Summary column */
+
+
+.assessment-table th:nth-child(6) {width: 15%;}
+.assessment-table td:nth-child(6) {width: 15%; text-align: left;} /* Reference column */
+
+
+/* Alternate row shading */
+.assessment-table tbody tr:nth-child(odd) {
+    background-color: var(--wf-light-gray);
+}
+
+
+/* Quality and Answer styling with badges - centered in their cells */
+/* Answer styling - without background color */
+.answer-yes {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: #155724;
+    text-align: center;
+    margin: 0 auto;
+    white-space: nowrap;
+}
+
+
+.answer-no {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: #721c24;
+    text-align: center;
+    margin: 0 auto;
+    white-space: nowrap;
+}
+
+
+.answer-n\/a {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: #212529;
+    text-align: center;
+    margin: 0 auto;
+    white-space: nowrap;
+}
+
+
+/* Answer Quality styling - with background color */
+.quality-adequate {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    background: #d4edda;
+    color: #155724;
+    text-align: center;
+    margin: 0 auto;
+    white-space: nowrap;
+}
+
+
+.quality-inadequate {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    background: #f8d7da;
+    color: #721c24;
+    text-align: center;
+    margin: 0 auto;
+    white-space: nowrap;
+}
+
+
+.quality-needs_review {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    background: #FFC107;
+    color: #212529;
+    text-align: center;
+    margin: 0 auto;
+    white-space: nowrap;
+}
+
+
+/* 6. QUALITY & STATUS STYLES */
+
+
+/* These old styles are now replaced by the badge styling above */
+/* 
+.quality-adequate,
+.answer-yes {
+  color: var(--success-green);
+  font-weight: bold;
+}
+
+
+.quality-inadequate,
+.answer-no {
+  color: var(--wf-red);
+  font-weight: bold;
+}
+
+
+.quality-needs_review,
+.answer-partial,
+.answer-n\/a {
+  color: var(--warning-orange);
+  font-weight: bold;
+}
+
+
+.answer-n\/a {
+  color: #6c757d;
+}
+*/
+
+
+/* Keep special styling for card view */
+.report-card .quality-adequate,
+.report-card .answer-yes {
+  color: var(--success-green);
+  font-weight: bold;
+  background: none;
+  padding: 0;
+}
+
+
+.report-card .quality-inadequate,
+.report-card .answer-no {
+  color: var(--wf-red);
+  font-weight: bold;
+  background: none;
+  padding: 0;
+}
+.report-card .quality-needs_review,
+.report-card .answer-partial,
+.report-card .answer-n\/a {
+  color: var(--warning-orange);
+  font-weight: bold;
+  background: none;
+  padding: 0;
+}
+
+
+/* 7. ZIP CONTENTS DISPLAY */
+.zip-contents-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+
+.zip-contents-modal {
+    background-color: white;
+    border-radius: 8px;
+    padding: 20px;
+    max-width: 800px;
+    width: 90%;
+    max-height: 80vh;
+    overflow-y: auto;
+    position: relative;
+    z-index: 1001;
+}
+
+
+/* Add styles for the warning modal */
+.warning-modal-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.6);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1100;
+    /* Higher than zip contents */
+}
+
+
+.warning-modal {
+    background-color: white;
+    border-radius: 8px;
+    padding: 20px;
+    max-width: 600px;
+    width: 90%;
+    position: relative;
+    z-index: 1101;
+    /* Higher than warning backdrop */
+}
+
+
+.warning-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+
+.warning-modal-content {
+    margin-bottom: 20px;
+}
+
+
+.warning-modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+
+.zip-contents-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    border-bottom: 1px solid var(--wf-border-color);
+    padding-bottom: 1rem;
+}
+
+
+.zip-contents-header h2 {
+    color: var(--wf-red);
+    margin: 0;
+}
+
+
+.folder-list {
+    list-style: none;
+    padding: 0;
+}
+
+
+.folder-item {
+    margin-bottom: 1rem;
+}
+
+
+.folder-header {
+    font-weight: bold;
+    cursor: pointer;
+    padding: 0.5rem;
+    background-color: var(--wf-light-gray);
+    border-radius: var(--border-radius);
+}
+
+
+.file-list {
+    list-style: none;
+    padding-left: 1.5rem;
+    margin-top: 0.5rem;
+}
+
+
+.file-item {
+    padding: 0.25rem 0;
+}
+
+
+/* Styles for new Zip Contents table view */
+.zip-contents-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+
+.zip-contents-table th,
+.zip-contents-table td {
+    padding: 0.75rem 1rem;
+    text-align: left;
+    border-bottom: 1px solid var(--wf-border-color);
+}
+
+
+.zip-contents-table tr:last-child td {
+    border-bottom: none;
+}
+
+
+.zip-folder-row {
+    cursor: pointer;
+    background-color: var(--wf-light-gray);
+    font-weight: bold;
+}
+
+
+.zip-folder-row:hover {
+    background-color: #e9ecef;
+}
+
+
+.zip-file-row td {
+    padding-left: 3rem !important;
+}
+
+
+.zip-file-icon,
+.zip-folder-icon {
+    margin-right: 0.75rem;
+}
+
+
+/* Questionnaire section styles */
+.questionnaire-section {
+    margin-bottom: 1.5rem;
+    padding: 1rem;
+    background-color: var(--wf-light-gray);
+    border-radius: var(--border-radius);
+    border-left: 4px solid var(--success-green);
+}
+
+
+.questionnaire-section h4 {
+    margin: 0 0 0.5rem 0;
+    color: var(--success-green);
+    font-weight: 600;
+}
+
+
+.zip-file-row-item {
+    display: flex;
+    align-items: center;
+    padding: 0.5rem 0;
+}
+
+
+/* New style for loading message */
+.processingMessage {
+    text-align: center;
+    padding: 2rem;
+    font-size: 1.25rem;
+    color: var(--wf-text);
+    font-style: italic;
+    background-color: var(--wf-white);
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-sm);
+    margin-bottom: 2rem;
+}
+
+
+.amberHighlight {
+  background-color: rgba(255, 191, 0, 0.15);
+  border-left: 4px solid #FFBF00;
+}
+
+
+.report-card.amberHighlight {
+  border-left: 4px solid #FFBF00;
+}
+
+
+.designElement {
+    font-weight: 500;
+    color: #333;
+  }
+  
+  
+  .reviewNote {
+    font-size: 0.85rem;
+    font-style: italic;
+    color: #996600;
+    margin-left: 5px;
+  }
+  
+  
+  .legendNote {
+    margin-top: 10px;
+    font-size: 0.9rem;
+    color: #996600;
+    font-style: italic;
+  }
+  
+  
+  .quality-needs_review {
+    color: #996600 !important;
+    font-weight: 600;
+  }
+  
+  
+  .mainQuestion {
+      font-weight: 600;
+      color: var(--wf-heading);
+  }
+  
+  
+  /* Progress bar styles */
+  .progressContainer {
+    width: 100%;
+    margin: 2rem 0;
+    display: flex;
+    justify-content: center;
+  }
+  
+  
+  .progressCard {
+    background-color: var(--wf-white);
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-md);
+    padding: 2rem;
+    width: 100%;
+    max-width: 800px;
+    text-align: center;
+  }
+  
+  
+  .progressIconContainer {
+    margin-bottom: 1.5rem;
+  }
+  
+  
+  .progressIconContainer h3 {
+    font-size: 1.5rem;
+    margin: 1rem 0 0.5rem;
+    color: var(--wf-text);
+  }
+  
+  
+  .progressText {
+    color: #6c757d;
+    margin-bottom: 1.5rem;
+  }
+  
+  
+  .progressBar {
+    height: 12px !important;
+    margin-bottom: 0.5rem;
+  }
+  
+  
+  .progressPercentage {
+    font-size: 0.9rem;
+    color: #6c757d;
+    margin-bottom: 1.5rem;
+  }
+  
+  
+  .progressDetails {
+    background-color: #f8f9fa;
+    border-radius: 6px;
+    padding: 1rem;
+    margin-top: 1rem;
+  }
+  
+  
+  .progressDetails small {
+    color: #6c757d;
+    font-size: 0.9rem;
+  }

@@ -3,13 +3,35 @@ export interface QuestionAnswer {
   answer: string;
 }
 
+
 export interface FileData {
   name: string;
   file: File;
 }
 
+
+export interface ReportItem {
+  id?: string;
+  question: string;
+  answer: string;
+  answerQuality: string;
+  source: string;
+  summary: string;
+  reference: string;
+}
+
+
 export interface GenerateReportResponse {
-  message: string;
-  data: QuestionAnswer[];
+  message?: string;
+  report?: ReportItem[];
   error?: string;
+  data?: any;
+}
+
+
+export interface FileWithBase64 {
+  name: string;
+  type: string;
+  size: number;
+  base64: string;
 } 

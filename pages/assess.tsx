@@ -705,44 +705,66 @@ return (
 
             {!showReport ? (
                 <>
-                    <div className={styles.uploadSection}>
-                        <Upload
-                            restrictions={{
-                                allowedExtensions: ['.zip'],
-                                maxFileSize: 100000000 // 100MB
-                            }}
-                            onAdd={handleUploadSuccess}
-                            saveUrl={''}
-                            autoUpload={false}
-                            multiple={false}
-                        />
-                    </div>
+                    {!loading && (
+                        <>
+                            <div className={styles.instructions}>
+                                <h2 className={styles.instructionsTitle}>How to Prepare Your Upload</h2>
+                                <ol className={styles.instructionsList}>
+                                    <li>
+                                        <strong>Gather Evidences:</strong> Collect all relevant evidence documents for each control under various domain. Accepted formats are pdf, doc and common image types (PNG, JPG).
+                                    </li>
+                                    <li>
+                                        <strong>Prepare The Upload:</strong> Create a top level folder named on vendor. Place vendor questionnaire here. Create separate folders named on each domain (e.g., "Business continuity", "Threat and vulnerability Management") and place corresponding evidences in domain folders.
+                                    </li>
+                                    <li>
+                                        <strong>Compress:</strong> Zip the folder structure and zipped file is the upload for full vendor assessment.
+                                    </li>
+                                </ol>
+                                <p className={styles.instructionsEmphasis}>
+                                    <strong>Important:</strong> Assessment results depends heavily on the correct folder structure in zip and the evidences provided. As of today, this platform support max 10 MB size of total evidence files per domain.
+                                </p>
+                            </div>
 
-                    {error && (
-                        <div className={styles.alertDanger} role="alert">
-                            {error}
-                        </div>
+                            <div className={styles.uploadSection}>
+                                <Upload
+                                    restrictions={{
+                                        allowedExtensions: ['.zip'],
+                                        maxFileSize: 100000000 // 100MB
+                                    }}
+                                    onAdd={handleUploadSuccess}
+                                    saveUrl={''}
+                                    autoUpload={false}
+                                    multiple={false}
+                                />
+                            </div>
+
+                            {error && (
+                                <div className={styles.alertDanger} role="alert">
+                                    {error}
+                                </div>
+                            )}
+
+                            <div className={styles.actionButtons}>
+                                <Button
+                                    disabled={!zipUploaded || loading}
+                                    onClick={handleGenerateReport}
+                                    themeColor={'primary'}
+                                >
+                                    {loading ? 'Processing...' : 'Generate Report'}
+                                </Button>
+                                {zipUploaded && (
+                                    <Button
+                                        disabled={loading || isViewingContents}
+                                        onClick={handleViewZipContents}
+                                        themeColor={'info'}
+                                        fillMode="outline"
+                                    >
+                                        {isViewingContents ? 'Loading Contents...' : 'View ZIP Contents'}
+                                    </Button>
+                                )}
+                            </div>
+                        </>
                     )}
-
-                    <div className={styles.actionButtons}>
-                        <Button
-                            disabled={!zipUploaded || loading}
-                            onClick={handleGenerateReport}
-                            themeColor={'primary'}
-                        >
-                            {loading ? 'Processing...' : 'Generate Report'}
-                        </Button>
-                        {zipUploaded && (
-                            <Button
-                                disabled={loading || isViewingContents}
-                                onClick={handleViewZipContents}
-                                themeColor={'info'}
-                                fillMode="outline"
-                            >
-                                {isViewingContents ? 'Loading Contents...' : 'View ZIP Contents'}
-                            </Button>
-                        )}
-                    </div>
                 </>
             ) : (
                 <>

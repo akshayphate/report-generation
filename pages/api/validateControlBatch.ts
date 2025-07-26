@@ -1,7 +1,7 @@
 /**
 * @file validateControlBatch.ts
 * @description Batch API endpoint to process all design elements for a single control
-* @author Damodar Perumalla
+* @author Akshay Phate
 * @created July 22, 2025
 */
 
@@ -9,7 +9,9 @@ import { NextApiRequest, NextApiResponse } from 'next';
 import { OpenAI } from 'openai';
 import { v4 as uuidv4 } from 'uuid';
 import https from 'https';
+import { mongo, logger } from '@ctip/toolkit';
 import { ChatCompletionMessageParam } from 'openai/resources/chat';
+const collection = mongo.collection;
 
 export const config = {
     api: {
@@ -101,12 +103,14 @@ export default async function validateControlBatchHandler(
         const client = new OpenAI({
             apiKey: token,
             baseURL: LLM_API_BASE_URL,
+            httpAgent: new https.Agent({ 
+                rejectUnauthorized: false,
+            }),
             defaultHeaders: headers,
         });
 
-        // For now, use a default system prompt - you can replace this with your actual system prompt
-        const system_prompt = { Prompt: "You are an AI assistant that analyzes vendor evidence against control requirements. Provide clear, concise assessments." };
-        console.log("system prompt is : ", system_prompt);
+        const system_prompt = await collection('Prompts').findOne({ Prompt_Name: "System Prompt" });
+        console.log("system prompt is : ",system_prompt);
 
         // Process each design element
         const results = await Promise.all(
@@ -119,12 +123,12 @@ export default async function validateControlBatchHandler(
                         },
                         ...evidences.map(({ name, base64 }: { name: string; base64: string }) => ({
                             type: 'text',
-                            text: `Evidence Name: ${name}`,
+                            text: `Evidence Name: ${name}`, // Include the evidence name
                         })),
                         ...evidences.map(({ base64 }: { name: string; base64: string }) => ({
                             type: 'image_url',
                             image_url: {
-                                url: base64,
+                                url: base64, // Include the base64 data
                             },
                         })),
                         {
@@ -143,6 +147,7 @@ export default async function validateControlBatchHandler(
                             content: contentArray
                         },
                     ] as ChatCompletionMessageParam[];
+                    console.log("content array : ", contentArray)
 
                     const completion = await client.chat.completions.create({
                         model: LLM_MODEL,

@@ -7,13 +7,14 @@
 import React, { useState, useEffect } from "react"
 import { processZipFile, ProcessedZipResult, ControlEvidence } from "../services/ZipfileProcessor";
 import { getDesignElementsByCID, loadDomainList } from '../services/promptServiceForVendor'
-import { getLLMEvidenceBatchParallel, type ApiResponse } from "../services/evidenceService";
+import { getLLMEvidenceWithProgress, ProcessingProgress, type ApiResponse } from "../services/evidenceService";
 import { getDomainIdsFromQuestionnaire } from '../services/questionnaireService'
 import styles from "../styles/assesment.module.css";
 import { Upload } from "@progress/kendo-react-upload";
 import { Button } from "@progress/kendo-react-buttons";
 import { ZipContentsDisplay } from "../components/ZipContentsDisplay";
 import { ReportDisplay } from "../components/ReportDisplay";
+import ProgressDisplay from "../components/ProgressDisplay";
 import ProgressBar from 'react-bootstrap/ProgressBar';
 import "@progress/kendo-theme-default/dist/all.css";
 // import { Protected } from '@ctip/cip-framework-client';
@@ -85,6 +86,7 @@ const FullVendorAnalysis: React.FC = () => {
     const [analyzingProgress, setAnalyzingProgress] = useState<number>(0);
     const [totalSteps, setTotalSteps] = useState<number>(0);
     const [currentStep, setCurrentStep] = useState<number>(0);
+    const [processingProgress, setProcessingProgress] = useState<ProcessingProgress | null>(null);
     const roles = ['tprss-inquire'];
 
 
@@ -357,10 +359,25 @@ const FullVendorAnalysis: React.FC = () => {
             }
 
 
-            // Step 4: Process with LLM
+            // Step 4: Process with LLM using progress tracking
             updateProgress(4, 5);
-            const batchResults = await getLLMEvidenceBatchParallel(controlPromptList);
-            console.log('✅ Parallel processing complete:', batchResults);
+            
+            // Progress tracking callback
+            const onProgress = (progress: ProcessingProgress) => {
+                console.log('Progress update:', progress);
+                setProcessingProgress(progress);
+                // Update UI with real-time progress
+                setAnalyzingProgress(Math.round((progress.completedControls / progress.totalControls) * 100));
+                
+                // Update current step display
+                if (progress.currentControl) {
+                    setCurrentStep(progress.completedControls + 1);
+                    setTotalSteps(progress.totalControls);
+                }
+            };
+            
+            const batchResults = await getLLMEvidenceWithProgress(controlPromptList, onProgress);
+            console.log('✅ Sequential processing complete:', batchResults);
 
 
             // Step 5: Format results
@@ -746,8 +763,16 @@ return (
             )}
 
 
-            {/* Updated Loading/Progress Display - Only show when not displaying report */}
-            {loading && !showReport && renderProgressBar()}
+            {/* Enhanced Progress Display */}
+            {loading && !showReport && processingProgress && (
+                <ProgressDisplay 
+                    progress={processingProgress} 
+                    isVisible={true} 
+                />
+            )}
+            
+            {/* Fallback progress bar for initial loading */}
+            {loading && !showReport && !processingProgress && renderProgressBar()}
 
 
             {/* ZIP Contents Display */}

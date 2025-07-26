@@ -87,6 +87,8 @@ const FullVendorAnalysis: React.FC = () => {
     const [totalSteps, setTotalSteps] = useState<number>(0);
     const [currentStep, setCurrentStep] = useState<number>(0);
     const [processingProgress, setProcessingProgress] = useState<ProcessingProgress | null>(null);
+    const [startTime, setStartTime] = useState<number | null>(null);
+    const [elapsedTime, setElapsedTime] = useState<number>(0);
     const roles = ['tprss-inquire'];
 
 
@@ -259,8 +261,27 @@ const FullVendorAnalysis: React.FC = () => {
             setAnalyzingProgress(0);
             setCurrentStep(0);
             setTotalSteps(0);
+            setStartTime(null);
+            setElapsedTime(0);
         }
     }, [loading]);
+
+    // Stopwatch effect
+    useEffect(() => {
+        let interval: NodeJS.Timeout;
+        
+        if (loading && startTime) {
+            interval = setInterval(() => {
+                setElapsedTime(Date.now() - startTime);
+            }, 1000);
+        }
+        
+        return () => {
+            if (interval) {
+                clearInterval(interval);
+            }
+        };
+    }, [loading, startTime]);
 
 
     const handleGenerateReport = async () => {
@@ -269,6 +290,7 @@ const FullVendorAnalysis: React.FC = () => {
 
         // Start processing regardless of file size
         setLoading(true);
+        setStartTime(Date.now());
         setError(null);
         setReport([]);
         setShowZipContents(false); // Hide zip contents view
@@ -683,25 +705,6 @@ return (
 
             {!showReport ? (
                 <>
-                    <div className={styles.instructions}>
-                        <h2 className={styles.instructionsTitle}>How to Prepare Your Upload</h2>
-                        <ol className={styles.instructionsList}>
-                            <li>
-                                <strong>Gather Evidences:</strong> Collect all relevant evidence documents for each control under various domain. Accepted formats are pdf, doc and common image types (PNG, JPG).
-                            </li>
-                            <li>
-                                <strong>Prepare The Upload:</strong> Create a top level folder named on vendor. Place vendor questionnaire here. Create separate folders named on each domain (e.g., "Business continuity", "Threat and vulnerability Management") and place corresponding evidences in domain folders.
-                            </li>
-                            <li>
-                                <strong>Compress:</strong> Zip the folder structure and zipped file is the upload for full vendor assessment.
-                            </li>
-                        </ol>
-                        <p className={styles.instructionsEmphasis}>
-                            <strong>Important:</strong> Assessment results depends heavily on the correct folder structure in zip and the evidences provided. As of today, this platform support max 10 MB size of total evidence files per domain.
-                        </p>
-                    </div>
-
-
                     <div className={styles.uploadSection}>
                         <Upload
                             restrictions={{
@@ -715,13 +718,11 @@ return (
                         />
                     </div>
 
-
                     {error && (
                         <div className={styles.alertDanger} role="alert">
                             {error}
                         </div>
                     )}
-
 
                     <div className={styles.actionButtons}>
                         <Button
@@ -767,7 +768,8 @@ return (
             {loading && !showReport && processingProgress && (
                 <ProgressDisplay 
                     progress={processingProgress} 
-                    isVisible={true} 
+                    isVisible={true}
+                    elapsedTime={elapsedTime}
                 />
             )}
             

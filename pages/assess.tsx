@@ -272,7 +272,7 @@ const FullVendorAnalysis: React.FC = () => {
     useEffect(() => {
         let interval: NodeJS.Timeout;
         
-        if (loading && startTime) {
+        if (loading && startTime && !showReport) {
             interval = setInterval(() => {
                 setElapsedTime(Date.now() - startTime);
             }, 1000);
@@ -283,7 +283,7 @@ const FullVendorAnalysis: React.FC = () => {
                 clearInterval(interval);
             }
         };
-    }, [loading, startTime]);
+    }, [loading, startTime, showReport]);
 
 
     const handleGenerateReport = async () => {

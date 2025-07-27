@@ -545,6 +545,9 @@ const FullVendorAnalysis: React.FC = () => {
             updateProgress(5, 5);
             setReport(reportResults);
             setShowReport(true);
+            // Capture final elapsed time before stopping timer
+            const finalElapsedTime = Date.now() - (startTime || Date.now());
+            setElapsedTime(finalElapsedTime);
             setLoading(false); // Stop the timer by setting loading to false
         } catch (error) {
             console.error('Error generating report:', error);

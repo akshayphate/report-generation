@@ -545,6 +545,7 @@ const FullVendorAnalysis: React.FC = () => {
             updateProgress(5, 5);
             setReport(reportResults);
             setShowReport(true);
+            setLoading(false); // Stop the timer by setting loading to false
         } catch (error) {
             console.error('Error generating report:', error);
             setError('Failed to generate report. Please try again.');

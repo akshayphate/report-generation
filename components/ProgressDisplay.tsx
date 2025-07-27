@@ -32,7 +32,7 @@ const ProgressDisplay: React.FC<ProgressDisplayProps> = ({ progress, isVisible, 
     };
 
     return (
-        <div className={styles.processingIndicator}>
+        <div className={styles.progressContainer}>
             <div className={styles.progressCard}>
                 <div className={styles.progressIconContainer}>
                     <div className={styles.spinner}></div>

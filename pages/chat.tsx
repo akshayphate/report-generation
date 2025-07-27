@@ -325,7 +325,7 @@ export default function Chat() {
                 <input
                   ref={fileInputRef}
                   type="file"
-                  style={{ display: 'none' }}
+                  className={styles.hiddenFileInput}
                   multiple
                   onChange={e => handleFileUpload(e.target.files)}
                 />

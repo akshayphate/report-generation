@@ -50,13 +50,9 @@ const ProgressDisplay: React.FC<ProgressDisplayProps> = ({ progress, isVisible, 
                 {/* Enhanced Progress Bar */}
                 <div className={styles.progressBar}>
                     <div 
+                        className={styles.progressBarFill}
                         style={{
-                            width: `${percentage}%`,
-                            height: '100%',
-                            background: 'linear-gradient(90deg, var(--wf-red) 0%, var(--wf-gold) 100%)',
-                            borderRadius: '6px',
-                            transition: 'width 0.5s ease',
-                            boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+                            width: `${percentage}%`
                         }}
                     />
                 </div>
@@ -67,39 +63,33 @@ const ProgressDisplay: React.FC<ProgressDisplayProps> = ({ progress, isVisible, 
 
                 {/* Stopwatch */}
                 {elapsedTime > 0 && (
-                    <div style={{ 
-                        textAlign: 'center', 
-                        marginBottom: '1rem',
-                        fontSize: '1.1rem',
-                        fontWeight: '500',
-                        color: '#666'
-                    }}>
+                    <div className={styles.stopwatchContainer}>
                         ⏱️ Elapsed Time: {formatTime(elapsedTime)}
                     </div>
                 )}
 
                 <div className={styles.progressDetails}>
-                    <div style={{ marginBottom: '1rem' }}>
+                    <div className={styles.progressDetailItem}>
                         <strong>Status:</strong> {progress.status === 'processing' ? 'Processing' : 'Completed'}
                     </div>
                     
                     {progress.currentControl && (
-                        <div style={{ marginBottom: '1rem' }}>
+                        <div className={styles.progressDetailItem}>
                             <strong>Current Control:</strong> {progress.currentControl}
                         </div>
                     )}
                     
                     {progress.errors.length > 0 && (
-                        <div style={{ marginBottom: '1rem' }}>
+                        <div className={styles.progressDetailItem}>
                             <strong>Errors:</strong> {progress.errors.length}
-                            <ul style={{ marginTop: '0.5rem', fontSize: '0.9rem' }}>
+                            <ul className={styles.errorList}>
                                 {progress.errors.slice(0, 3).map((error, index) => (
-                                    <li key={index} style={{ color: 'var(--wf-red)' }}>
+                                    <li key={index} className={styles.errorItem}>
                                         {error}
                                     </li>
                                 ))}
                                 {progress.errors.length > 3 && (
-                                    <li style={{ color: 'var(--wf-red)' }}>
+                                    <li className={styles.errorItem}>
                                         ... and {progress.errors.length - 3} more errors
                                     </li>
                                 )}
@@ -107,7 +97,7 @@ const ProgressDisplay: React.FC<ProgressDisplayProps> = ({ progress, isVisible, 
                         </div>
                     )}
                     
-                    <small style={{ color: '#888', fontStyle: 'italic' }}>
+                    <small className={styles.progressNote}>
                         Processing controls sequentially for better reliability and progress tracking.
                     </small>
                 </div>

@@ -869,3 +869,38 @@
     0% { transform: rotate(0deg); }
     100% { transform: rotate(360deg); }
   }
+
+  /* ProgressDisplay component styles */
+  .progressBarFill {
+    height: 100%;
+    border-radius: 6px;
+    transition: width 0.5s ease;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    background: linear-gradient(90deg, var(--wf-red) 0%, var(--wf-gold) 100%);
+  }
+
+  .stopwatchContainer {
+    text-align: center;
+    margin-bottom: 1rem;
+    font-size: 1.1rem;
+    font-weight: 500;
+    color: #666;
+  }
+
+  .progressDetailItem {
+    margin-bottom: 1rem;
+  }
+
+  .errorList {
+    margin-top: 0.5rem;
+    font-size: 0.9rem;
+  }
+
+  .errorItem {
+    color: var(--wf-red);
+  }
+
+  .progressNote {
+    color: #888;
+    font-style: italic;
+  }

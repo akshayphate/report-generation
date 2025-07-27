@@ -370,4 +370,9 @@
   color: var(--wf-dark-red);
 }
 
+/* Hidden file input */
+.hiddenFileInput {
+  display: none;
+}
+
 

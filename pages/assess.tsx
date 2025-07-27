@@ -272,14 +272,24 @@ const FullVendorAnalysis: React.FC = () => {
     useEffect(() => {
         let interval: NodeJS.Timeout;
         
+        console.log('Timer effect:', { loading, startTime, showReport });
+        
         if (loading && startTime && !showReport) {
+            console.log('Starting timer...');
             interval = setInterval(() => {
-                setElapsedTime(Date.now() - startTime);
+                const currentElapsed = Date.now() - startTime;
+                console.log('Timer update:', currentElapsed);
+                setElapsedTime(currentElapsed);
             }, 1000);
+        } else if (showReport && loading) {
+            // Stop loading when report is shown
+            console.log('Report shown, stopping loading...');
+            setLoading(false);
         }
         
         return () => {
             if (interval) {
+                console.log('Clearing timer...');
                 clearInterval(interval);
             }
         };
@@ -546,9 +556,12 @@ const FullVendorAnalysis: React.FC = () => {
             setReport(reportResults);
             setShowReport(true);
             // Capture final elapsed time before stopping timer
-            const finalElapsedTime = Date.now() - (startTime || Date.now());
+            console.log('Debug timer:', { startTime, currentTime: Date.now() });
+            const finalElapsedTime = startTime ? Date.now() - startTime : 0;
+            console.log('Final elapsed time:', finalElapsedTime);
             setElapsedTime(finalElapsedTime);
-            setLoading(false); // Stop the timer by setting loading to false
+            // Don't stop loading immediately - let the timer effect handle it
+            // setLoading(false); // Stop the timer by setting loading to false
         } catch (error) {
             console.error('Error generating report:', error);
             setError('Failed to generate report. Please try again.');

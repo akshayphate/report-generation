@@ -37,6 +37,8 @@ interface ReportDisplayProps {
 
 export const ReportDisplay: React.FC<ReportDisplayProps> = ({ results, viewMode, totalTime }) => {
     
+    console.log('ReportDisplay received totalTime:', totalTime);
+    
     // Format total time for display
     const formatTotalTime = (ms: number) => {
         const seconds = Math.floor(ms / 1000);

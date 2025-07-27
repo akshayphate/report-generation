@@ -629,53 +629,7 @@ const FullVendorAnalysis: React.FC = () => {
     };
 
 
-    // Progress bar component
-    const renderProgressBar = () => {
-        return (
-            <div className={styles.progressContainer} aria-live="polite">
-                <div className={styles.progressCard}>
-                    <div className={styles.progressIconContainer}>
-                        <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            width="48"
-                            height="48"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="#D41C2C"
-                            strokeWidth="2"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                        >
-                            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
-                        </svg>
-                        <h3>Analyzing Evidence</h3>
-                        <p className={styles.progressText}>
-                            AI is processing your uploaded evidence files...
-                        </p>
-                    </div>
 
-
-                    <ProgressBar
-                        now={analyzingProgress}
-                        className={styles.progressBar}
-                        aria-valuemin={0}
-                        aria-valuemax={100}
-                        aria-valuenow={analyzingProgress}
-                    />
-                    <p className={styles.progressPercentage}>
-                        {analyzingProgress}% Complete
-                    </p>
-
-
-                    <div className={styles.progressDetails}>
-                        <small>
-                            Processing {processedZipData?.totalFiles || 0} files for compliance validation...
-                        </small>
-                    </div>
-                </div>
-            </div>
-        );
-    };
 
 
     // Helper function to get a display-friendly mime type for Excel files
@@ -799,17 +753,21 @@ return (
             )}
 
 
-            {/* Enhanced Progress Display */}
-            {loading && !showReport && processingProgress && (
+            {/* Progress Display */}
+            {loading && !showReport && (
                 <ProgressDisplay 
-                    progress={processingProgress} 
+                    progress={processingProgress || {
+                        totalControls: 0,
+                        completedControls: 0,
+                        currentControl: '',
+                        status: 'processing',
+                        results: {},
+                        errors: []
+                    }}
                     isVisible={true}
                     elapsedTime={elapsedTime}
                 />
             )}
-            
-            {/* Fallback progress bar for initial loading */}
-            {loading && !showReport && !processingProgress && renderProgressBar()}
 
 
             {/* ZIP Contents Display */}

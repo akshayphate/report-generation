@@ -104,7 +104,8 @@ const FullVendorAnalysis: React.FC = () => {
     } = useTimeoutPrevention({
         intervalMinutes: 1, // Show modal every 1 minute for testing (change back to 14 for production)
         countdownSeconds: 30, // Give user 30 seconds to respond
-        enabled: true // Always enabled to prevent timeouts
+        enabled: true, // Always enabled to prevent timeouts
+        disabled: showReport // Disable timeout prevention when report is shown
     });
 
 

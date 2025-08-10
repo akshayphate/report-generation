@@ -4,13 +4,15 @@ interface UseTimeoutPreventionOptions {
     intervalMinutes?: number; // Default 14 minutes
     countdownSeconds?: number; // Default 30 seconds for user to respond
     enabled?: boolean; // Whether the timeout prevention is enabled
+    disabled?: boolean; // Additional condition to disable the timeout prevention
 }
 
 export const useTimeoutPrevention = (options: UseTimeoutPreventionOptions = {}) => {
     const {
         intervalMinutes = 14,
         countdownSeconds = 30,
-        enabled = true
+        enabled = true,
+        disabled = false
     } = options;
 
     const [showModal, setShowModal] = useState(false);
@@ -133,7 +135,21 @@ export const useTimeoutPrevention = (options: UseTimeoutPreventionOptions = {}) 
 
     // Main interval to show modal every 14 minutes
     useEffect(() => {
-        if (!enabled) return;
+        if (!enabled || disabled) {
+            // Clear any existing intervals when disabled
+            if (intervalRef.current) {
+                clearInterval(intervalRef.current);
+                intervalRef.current = null;
+                console.log('⏸️ Timeout prevention disabled - clearing intervals');
+            }
+            if (countdownRef.current) {
+                clearInterval(countdownRef.current);
+                countdownRef.current = null;
+            }
+            // Hide modal if it's currently showing
+            setShowModal(false);
+            return;
+        }
 
         const intervalMs = intervalMinutes * 60 * 1000; // Convert to milliseconds
         console.log(`⏰ Starting timeout prevention timer: ${intervalMinutes} minutes (${intervalMs}ms)`);
@@ -178,7 +194,7 @@ export const useTimeoutPrevention = (options: UseTimeoutPreventionOptions = {}) 
                 clearInterval(intervalRef.current);
             }
         };
-    }, [enabled, intervalMinutes, countdownSeconds, simulateActivity]);
+    }, [enabled, intervalMinutes, countdownSeconds, simulateActivity, disabled]);
 
     // Cleanup on unmount
     useEffect(() => {

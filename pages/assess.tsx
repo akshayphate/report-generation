@@ -100,7 +100,6 @@ const FullVendorAnalysis: React.FC = () => {
         countdown: timeoutCountdown,
         handleUserConfirmation: handleTimeoutConfirmation,
         closeModal: closeTimeoutModal,
-        resetInterval: resetTimeoutInterval,
         simulateActivity
     } = useTimeoutPrevention({
         intervalMinutes: 1, // Show modal every 1 minute for testing (change back to 14 for production)
@@ -306,26 +305,7 @@ const FullVendorAnalysis: React.FC = () => {
         };
     }, [loading, startTime, showReport]);
 
-    // Global activity listener to reset timeout interval on user interaction
-    useEffect(() => {
-        const handleUserActivity = () => {
-            // Reset the timeout interval when user is active
-            resetTimeoutInterval();
-        };
 
-        // Listen for various user activity events
-        const events = ['mousedown', 'mousemove', 'keypress', 'scroll', 'touchstart', 'click'];
-        
-        events.forEach(event => {
-            document.addEventListener(event, handleUserActivity, { passive: true });
-        });
-
-        return () => {
-            events.forEach(event => {
-                document.removeEventListener(event, handleUserActivity);
-            });
-        };
-    }, [resetTimeoutInterval]);
 
 
     const handleGenerateReport = async () => {

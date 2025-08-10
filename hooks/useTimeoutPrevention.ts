@@ -61,6 +61,18 @@ export const useTimeoutPrevention = (options: UseTimeoutPreventionOptions = {}) 
                     // Auto-close modal and simulate activity
                     setShowModal(false);
                     simulateActivity();
+                    
+                    // Reset the main interval to start counting 14 minutes again
+                    if (intervalRef.current) {
+                        clearInterval(intervalRef.current);
+                    }
+                    
+                    const intervalMs = intervalMinutes * 60 * 1000;
+                    console.log(`🔄 Resetting timeout prevention timer (auto-close): ${intervalMinutes} minutes (${intervalMs}ms)`);
+                    intervalRef.current = setInterval(() => {
+                        showTimeoutModal();
+                    }, intervalMs);
+                    
                     return countdownSeconds;
                 }
                 return prev - 1;
@@ -78,7 +90,18 @@ export const useTimeoutPrevention = (options: UseTimeoutPreventionOptions = {}) 
             clearInterval(countdownRef.current);
             countdownRef.current = null;
         }
-    }, [simulateActivity]);
+        
+        // Reset the main interval to start counting 14 minutes again
+        if (intervalRef.current) {
+            clearInterval(intervalRef.current);
+        }
+        
+        const intervalMs = intervalMinutes * 60 * 1000;
+        console.log(`🔄 Resetting timeout prevention timer (user confirmed): ${intervalMinutes} minutes (${intervalMs}ms)`);
+        intervalRef.current = setInterval(() => {
+            showTimeoutModal();
+        }, intervalMs);
+    }, [simulateActivity, intervalMinutes, showTimeoutModal]);
 
     // Function to close modal
     const closeModal = useCallback(() => {
@@ -92,15 +115,28 @@ export const useTimeoutPrevention = (options: UseTimeoutPreventionOptions = {}) 
         
         // Simulate activity anyway to prevent timeout
         simulateActivity();
-    }, [simulateActivity]);
+        
+        // Reset the main interval to start counting 14 minutes again
+        if (intervalRef.current) {
+            clearInterval(intervalRef.current);
+        }
+        
+        const intervalMs = intervalMinutes * 60 * 1000;
+        console.log(`🔄 Resetting timeout prevention timer (modal closed): ${intervalMinutes} minutes (${intervalMs}ms)`);
+        intervalRef.current = setInterval(() => {
+            showTimeoutModal();
+        }, intervalMs);
+    }, [simulateActivity, intervalMinutes, showTimeoutModal]);
 
     // Main interval to show modal every 14 minutes
     useEffect(() => {
         if (!enabled) return;
 
         const intervalMs = intervalMinutes * 60 * 1000; // Convert to milliseconds
+        console.log(`⏰ Starting timeout prevention timer: ${intervalMinutes} minutes (${intervalMs}ms)`);
         
         intervalRef.current = setInterval(() => {
+            console.log('🔔 Timeout prevention modal triggered!');
             showTimeoutModal();
         }, intervalMs);
 
@@ -130,6 +166,7 @@ export const useTimeoutPrevention = (options: UseTimeoutPreventionOptions = {}) 
         }
         
         const intervalMs = intervalMinutes * 60 * 1000;
+        console.log(`🔄 Resetting timeout prevention timer (resetInterval): ${intervalMinutes} minutes (${intervalMs}ms)`);
         intervalRef.current = setInterval(() => {
             showTimeoutModal();
         }, intervalMs);

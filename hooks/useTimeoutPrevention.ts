@@ -64,33 +64,9 @@ export const useTimeoutPrevention = (options: UseTimeoutPreventionOptions = {}) 
             countdownRef.current = null;
         }
         
-        // Reset the main interval to start counting 14 minutes again
-        if (intervalRef.current) {
-            clearInterval(intervalRef.current);
-        }
-        
-        const intervalMs = intervalMinutes * 60 * 1000;
-        console.log(`🔄 Resetting timeout prevention timer (user confirmed): ${intervalMinutes} minutes (${intervalMs}ms)`);
-        intervalRef.current = setInterval(() => {
-            setShowModal(true);
-            setCountdown(countdownSeconds);
-            
-            // Start countdown for this modal
-            if (countdownRef.current) {
-                clearInterval(countdownRef.current);
-            }
-            countdownRef.current = setInterval(() => {
-                setCountdown(prev => {
-                    if (prev <= 1) {
-                        setShowModal(false);
-                        simulateActivity();
-                        return countdownSeconds;
-                    }
-                    return prev - 1;
-                });
-            }, 1000);
-        }, intervalMs);
-    }, [simulateActivity, intervalMinutes, countdownSeconds]);
+        // The main interval continues running and will trigger again after intervalMs
+        console.log('✅ User confirmed, main timer continues...');
+    }, [simulateActivity]);
 
     // Function to close modal
     const closeModal = useCallback(() => {
@@ -105,33 +81,9 @@ export const useTimeoutPrevention = (options: UseTimeoutPreventionOptions = {}) 
         // Simulate activity anyway to prevent timeout
         simulateActivity();
         
-        // Reset the main interval to start counting 14 minutes again
-        if (intervalRef.current) {
-            clearInterval(intervalRef.current);
-        }
-        
-        const intervalMs = intervalMinutes * 60 * 1000;
-        console.log(`🔄 Resetting timeout prevention timer (modal closed): ${intervalMinutes} minutes (${intervalMs}ms)`);
-        intervalRef.current = setInterval(() => {
-            setShowModal(true);
-            setCountdown(countdownSeconds);
-            
-            // Start countdown for this modal
-            if (countdownRef.current) {
-                clearInterval(countdownRef.current);
-            }
-            countdownRef.current = setInterval(() => {
-                setCountdown(prev => {
-                    if (prev <= 1) {
-                        setShowModal(false);
-                        simulateActivity();
-                        return countdownSeconds;
-                    }
-                    return prev - 1;
-                });
-            }, 1000);
-        }, intervalMs);
-    }, [simulateActivity, intervalMinutes, countdownSeconds]);
+        // The main interval continues running and will trigger again after intervalMs
+        console.log('❌ Modal closed, main timer continues...');
+    }, [simulateActivity]);
 
     // Main interval to show modal every 14 minutes
     useEffect(() => {
@@ -170,17 +122,14 @@ export const useTimeoutPrevention = (options: UseTimeoutPreventionOptions = {}) 
                         setShowModal(false);
                         simulateActivity();
                         
-                        // Reset the main interval to start counting 14 minutes again
-                        if (intervalRef.current) {
-                            clearInterval(intervalRef.current);
+                        // Clear the countdown interval
+                        if (countdownRef.current) {
+                            clearInterval(countdownRef.current);
+                            countdownRef.current = null;
                         }
                         
-                        const intervalMs = intervalMinutes * 60 * 1000;
-                        console.log(`🔄 Resetting timeout prevention timer (auto-close): ${intervalMinutes} minutes (${intervalMs}ms)`);
-                        intervalRef.current = setInterval(() => {
-                            setShowModal(true);
-                            setCountdown(countdownSeconds);
-                        }, intervalMs);
+                        // The main interval will continue running and trigger again after intervalMs
+                        console.log('⏰ Modal auto-closed, main timer continues...');
                         
                         return countdownSeconds;
                     }

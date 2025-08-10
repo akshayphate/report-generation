@@ -1,8 +1,8 @@
 /**
-* @file assessment.tsx
+* @file assess.tsx
 * @description 
 * @author Akshay Phate
-* @created July 22, 2025
+* @created July 26, 2025
 */
 import React, { useState, useEffect } from "react"
 import { processZipFile, ProcessedZipResult, ControlEvidence } from "../services/ZipfileProcessor";
@@ -17,6 +17,8 @@ import { ReportDisplay } from "../components/ReportDisplay";
 import ProgressDisplay from "../components/ProgressDisplay";
 import ProgressBar from 'react-bootstrap/ProgressBar';
 import "@progress/kendo-theme-default/dist/all.css";
+import { useTimeoutPrevention } from "../hooks/useTimeoutPrevention";
+import { TimeoutPreventionModal } from "../components/TimeoutPreventionModal";
 // import { Protected } from '@ctip/cip-framework-client';
 // import RestrictAccess from '../components/RestrictAcess';
 
@@ -92,6 +94,20 @@ const FullVendorAnalysis: React.FC = () => {
     const [uploadConfirmation, setUploadConfirmation] = useState<string | null>(null);
     const roles = ['tprss-inquire'];
 
+    // Timeout prevention hook - shows modal every 14 minutes to prevent 15-minute timeout
+    const {
+        showModal: showTimeoutModal,
+        countdown: timeoutCountdown,
+        handleUserConfirmation: handleTimeoutConfirmation,
+        closeModal: closeTimeoutModal,
+        resetInterval: resetTimeoutInterval,
+        simulateActivity
+    } = useTimeoutPrevention({
+        intervalMinutes: 14, // Show modal every 14 minutes
+        countdownSeconds: 30, // Give user 30 seconds to respond
+        enabled: true // Always enabled to prevent timeouts
+    });
+
 
     const handleUploadSuccess = (event: any) => {
         const files = event.affectedFiles || [];
@@ -126,7 +142,10 @@ const FullVendorAnalysis: React.FC = () => {
         setIsViewingContents(false);
         setError(null);
         setUploadConfirmation(`✅ File "${zipFile.name}" uploaded successfully!`);
-        
+
+        // Simulate activity to prevent timeout
+        simulateActivity();
+
         handleZipFileChange(zipFile);
 
 
@@ -205,12 +224,12 @@ const FullVendorAnalysis: React.FC = () => {
 
 
             setZipContents({ folders: processedFolders });
-            
+
             // Set questionnaire file with additional properties
             if (result.questionnaireFile) {
                 const fileType = getMimeTypeForDisplay(result.questionnaireFile.name);
                 const fileSize = result.questionnaireFile.content.byteLength;
-                setQuestionnaireFile({ 
+                setQuestionnaireFile({
                     name: result.questionnaireFile.name,
                     type: fileType,
                     size: fileSize
@@ -218,7 +237,7 @@ const FullVendorAnalysis: React.FC = () => {
             } else {
                 setQuestionnaireFile(null);
             }
-            
+
             setError(null);
 
 
@@ -271,29 +290,42 @@ const FullVendorAnalysis: React.FC = () => {
     // Stopwatch effect
     useEffect(() => {
         let interval: NodeJS.Timeout;
-        
-        console.log('Timer effect:', { loading, startTime, showReport });
-        
+
+
         if (loading && startTime && !showReport) {
-            console.log('Starting timer...');
             interval = setInterval(() => {
-                const currentElapsed = Date.now() - startTime;
-                console.log('Timer update:', currentElapsed);
-                setElapsedTime(currentElapsed);
+                setElapsedTime(Date.now() - startTime);
             }, 1000);
-        } else if (showReport && loading) {
-            // Stop loading when report is shown
-            console.log('Report shown, stopping loading...');
-            setLoading(false);
         }
-        
+
+
         return () => {
             if (interval) {
-                console.log('Clearing timer...');
                 clearInterval(interval);
             }
         };
     }, [loading, startTime, showReport]);
+
+    // Global activity listener to reset timeout interval on user interaction
+    useEffect(() => {
+        const handleUserActivity = () => {
+            // Reset the timeout interval when user is active
+            resetTimeoutInterval();
+        };
+
+        // Listen for various user activity events
+        const events = ['mousedown', 'mousemove', 'keypress', 'scroll', 'touchstart', 'click'];
+        
+        events.forEach(event => {
+            document.addEventListener(event, handleUserActivity, { passive: true });
+        });
+
+        return () => {
+            events.forEach(event => {
+                document.removeEventListener(event, handleUserActivity);
+            });
+        };
+    }, [resetTimeoutInterval]);
 
 
     const handleGenerateReport = async () => {
@@ -306,18 +338,21 @@ const FullVendorAnalysis: React.FC = () => {
         setError(null);
         setReport([]);
         setShowZipContents(false); // Hide zip contents view
-
-
+        
+        // Simulate activity to prevent timeout
+        simulateActivity();
         try {
             const zipResult = processedZipData;
             console.log('✅ Using pre-processed zip data:', zipResult);
 
 
+
             // Get domain IDs from excel file if it exists
-            updateProgress(1, 5); // Step 1: Process questionnaire
+            //updateProgress(1, 5); // Step 1: Process questionnaire
             const domainIdsFromExcel = zipResult.questionnaireFile?.content
                 ? await getDomainIdsFromQuestionnaire(zipResult.questionnaireFile.content)
                 : null;
+
 
 
             if (domainIdsFromExcel) {
@@ -325,14 +360,17 @@ const FullVendorAnalysis: React.FC = () => {
             }
 
 
-            updateProgress(2, 5); // Step 2: Load domain list
+
+            //updateProgress(2, 5); // Step 2: Load domain list
             const domainList = await loadDomainList();
             const mainQuestionMap = new Map(domainList.map(d => [d.Domain_Id, d.Question]));
+
 
 
             // Step 3: Prepare control prompts
             const controlPromptPreparationSteps = zipResult.controls.length;
             let currentControlStep = 0;
+
 
 
             const controlPromptList = (await Promise.all(
@@ -342,6 +380,7 @@ const FullVendorAnalysis: React.FC = () => {
                         ? controlGroup.domainIds.filter(id => domainIdsFromExcel.includes(id))
                         : controlGroup.domainIds;
                     console.log("Valid domain IDs for control group:", controlGroup.controlName, validDomainIds.toString);
+
 
 
                     if (validDomainIds.length === 0) {
@@ -356,7 +395,9 @@ const FullVendorAnalysis: React.FC = () => {
                     }
 
 
+
                     console.log(`Processing valid Domain IDs for ${controlGroup.controlName}:`, validDomainIds);
+
 
 
                     // For each valid domain ID, get its design elements
@@ -376,14 +417,16 @@ const FullVendorAnalysis: React.FC = () => {
                         })
                     );
                     currentControlStep++;
-                    updateProgress(2 + (currentControlStep / controlPromptPreparationSteps), 5);
+                    // updateProgress(2 + (currentControlStep / controlPromptPreparationSteps), 5);
                     return promptsForGroup;
                 })
             )).flat().filter(Boolean) as ControlPromptList;
 
 
+
             console.log('✅ Control prompt list prepared:', controlPromptList);
-            updateProgress(3, 5); // Step 3 complete
+            //updateProgress(3, 5); // Step 3 complete
+
 
 
             if (controlPromptList.length === 0) {
@@ -393,29 +436,34 @@ const FullVendorAnalysis: React.FC = () => {
             }
 
 
+
             // Step 4: Process with LLM using progress tracking
-            updateProgress(4, 5);
-            
+            //updateProgress(4, 5);
+
+
             // Progress tracking callback
             const onProgress = (progress: ProcessingProgress) => {
                 console.log('Progress update:', progress);
                 setProcessingProgress(progress);
                 // Update UI with real-time progress
                 setAnalyzingProgress(Math.round((progress.completedControls / progress.totalControls) * 100));
-                
+
+
                 // Update current step display
                 if (progress.currentControl) {
                     setCurrentStep(progress.completedControls + 1);
                     setTotalSteps(progress.totalControls);
                 }
             };
-            
+
+
             const batchResults = await getLLMEvidenceWithProgress(controlPromptList, onProgress);
             console.log('✅ Sequential processing complete:', batchResults);
 
 
+
             // Step 5: Format results
-            updateProgress(4.5, 5);
+            //updateProgress(4.5, 5);
             // Transform batch results into report format
             const reportResults: EnhancedReportItem[] = controlPromptList.flatMap(control => {
                 const resultsForControl = batchResults[control.controlId] || [];
@@ -423,10 +471,13 @@ const FullVendorAnalysis: React.FC = () => {
                 const mainQuestion = mainQuestionMap.get(control.controlId) || 'Unknown Question';
 
 
+
                 return control.prompts.map((prompt, index) => {
 
 
+
                     const result = resultsForControl[index];
+
 
 
                     if (!result) {
@@ -468,13 +519,14 @@ const FullVendorAnalysis: React.FC = () => {
                         }
 
 
+
                         const strippedAnswer = cleanAnswer.replace(/^```json\s*/, '').replace(/```\s*$/, '');
                         //console.log("stripped answer is : ", strippedAnswer)
                         var answerObj = JSON.parse(strippedAnswer);
                         // if answerObj is an array then take the first element
                         if (Array.isArray(answerObj)) {
                             if (answerObj.length > 0) {
-                               // console.log(`Answer object is an array, taking first element for prompt ${prompt.id} in control ${control.controlId}`);
+                                // console.log(`Answer object is an array, taking first element for prompt ${prompt.id} in control ${control.controlId}`);
                                 answerObj = answerObj[0];
                             } else {
                                 //console.warn(`Answer object is an empty array for prompt ${prompt.id} in control ${control.controlId}`);
@@ -497,8 +549,10 @@ const FullVendorAnalysis: React.FC = () => {
                         }
 
 
+
                         //console.log(`Parsed answer object for prompt ${prompt.id} in control ${control.controlId}:`, answerObj);
- 
+
+
                         if (!answerObj) {
                             console.log(`No answer object found for prompt ${prompt.id} in control ${control.controlId}`);
                             //console.log("stripped answer is : ", strippedAnswer)
@@ -509,9 +563,11 @@ const FullVendorAnalysis: React.FC = () => {
                                 answerObj.Answer_Quality.slice(1).toLowerCase()) : 'Needs_Review';
 
 
+
                         const mappedAnswer = answerObj.Answer ?
                             (answerObj.Answer.charAt(0).toUpperCase() +
                                 answerObj.Answer.slice(1).toLowerCase()) : 'No';
+
 
 
                         return {
@@ -551,17 +607,11 @@ const FullVendorAnalysis: React.FC = () => {
             });
 
 
+
             console.log('✅ Report results prepared:', reportResults);
-            updateProgress(5, 5);
+            //updateProgress(5, 5);
             setReport(reportResults);
             setShowReport(true);
-            // Capture final elapsed time before stopping timer
-            console.log('Debug timer:', { startTime, currentTime: Date.now() });
-            const finalElapsedTime = startTime ? Date.now() - startTime : 0;
-            console.log('Final elapsed time:', finalElapsedTime);
-            setElapsedTime(finalElapsedTime);
-            // Don't stop loading immediately - let the timer effect handle it
-            // setLoading(false); // Stop the timer by setting loading to false
         } catch (error) {
             console.error('Error generating report:', error);
             setError('Failed to generate report. Please try again.');
@@ -570,8 +620,10 @@ const FullVendorAnalysis: React.FC = () => {
     };
 
 
+
     const downloadExcel = () => {
         if (!report || report.length === 0) return;
+
 
 
         const headers = "MainQuestion,Question,SubQuestion,Answer,Answer_Quality,Answer_Source,Summary,Reference\n";
@@ -591,6 +643,7 @@ const FullVendorAnalysis: React.FC = () => {
         }).join('\n');
 
 
+
         const csvContent = headers + rows;
         const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
         const link = document.createElement('a');
@@ -598,6 +651,7 @@ const FullVendorAnalysis: React.FC = () => {
         link.download = 'assessment_report.csv';
         link.click();
     };
+
 
 
     const startOver = () => {
@@ -623,16 +677,19 @@ const FullVendorAnalysis: React.FC = () => {
     };
 
 
+
     const handleViewZipContents = async () => {
         setIsViewingContents(true);
         setShowZipContents(true);
         setShowReport(false);
 
 
+
         // Reset these states to ensure buttons are enabled when ZIP contents are closed
         setLoading(false);
         setIsProcessingAllowed(false);
     };
+
 
 
     // Update the ZipContentsDisplay onClose handler
@@ -646,171 +703,235 @@ const FullVendorAnalysis: React.FC = () => {
 
 
 
+    // Progress bar component
+    const renderProgressBar = () => {
+        return (
+            <div className={styles.progressContainer} aria-live="polite">
+                <div className={styles.progressCard}>
+                    <div className={styles.progressIconContainer}>
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="48"
+                            height="48"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="#D41C2C"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                        >
+                            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+                        </svg>
+                        <h3>Analyzing Evidence</h3>
+                        <p className={styles.progressText}>
+                            AI is processing your uploaded evidence files...
+                        </p>
+                    </div>
+
+
+
+                    <ProgressBar
+                        now={analyzingProgress}
+                        className={styles.progressBar}
+                        aria-valuemin={0}
+                        aria-valuemax={100}
+                        aria-valuenow={analyzingProgress}
+                    />
+                    <p className={styles.progressPercentage}>
+                        {analyzingProgress}% Complete
+                    </p>
+
+
+
+                    <div className={styles.progressDetails}>
+                        <small>
+                            Processing {processedZipData?.totalFiles || 0} files for compliance validation...
+                        </small>
+                    </div>
+                </div>
+            </div>
+        );
+    };
+
 
 
     // Helper function to get a display-friendly mime type for Excel files
-const getMimeTypeForDisplay = (fileName: string): string => {
-    const extension = fileName.split('.').pop()?.toLowerCase();
-    switch (extension) {
-        case 'xlsx':
-            return 'Excel Spreadsheet';
-        case 'xls':
-            return 'Excel Spreadsheet (Legacy)';
-        case 'xlsm':
-            return 'Excel Spreadsheet (Macro-enabled)';
-        case 'pdf':
-            return 'PDF Document';
-        case 'jpg':
-        case 'jpeg':
-            return 'JPEG Image';
-        case 'png':
-            return 'PNG Image';
-        case 'txt':
-            return 'Text Document';
-        case 'doc':
-        case 'docx':
-            return 'Word Document';
-        default:
-            return 'Unknown File Type';
-    }
-};
-return (
-    // <Protected withRole={roles} Denied={() => <RestrictAccess />}>
-        <div className={`${styles.root} ${styles.container}`}>
-            {/* <header className={styles.header}>
+    const getMimeTypeForDisplay = (fileName: string): string => {
+        const extension = fileName.split('.').pop()?.toLowerCase();
+        switch (extension) {
+            case 'xlsx':
+                return 'Excel Spreadsheet';
+            case 'xls':
+                return 'Excel Spreadsheet (Legacy)';
+            case 'xlsm':
+                return 'Excel Spreadsheet (Macro-enabled)';
+            case 'pdf':
+                return 'PDF Document';
+            case 'jpg':
+            case 'jpeg':
+                return 'JPEG Image';
+            case 'png':
+                return 'PNG Image';
+            case 'txt':
+                return 'Text Document';
+            case 'doc':
+            case 'docx':
+                return 'Word Document';
+            default:
+                return 'Unknown File Type';
+        }
+    };
+    return (
+        // <Protected withRole={roles} Denied={() => <RestrictAccess />}>
+            <div className={`${styles.root} ${styles.container}`}>
+                {/* <header className={styles.header}>
             <h1 className={styles.pageTitle}>Third Party Risk Summarization Service</h1>
             <p className={styles.sectionHeading}>Automated Evidence Review for Third Party Controls</p>
         </header> */}
 
 
-            {!showReport ? (
-                <>
-                    {!loading && (
-                        <>
-                            <div className={styles.instructions}>
-                                <h2 className={styles.instructionsTitle}>How to Prepare Your Upload</h2>
-                                <ol className={styles.instructionsList}>
-                                    <li>
-                                        <strong>Gather Evidences:</strong> Collect all relevant evidence documents for each control under various domain. Accepted formats are pdf, doc and common image types (PNG, JPG).
-                                    </li>
-                                    <li>
-                                        <strong>Prepare The Upload:</strong> Create a top level folder named on vendor. Place vendor questionnaire here. Create separate folders named on each domain (e.g., "Business continuity", "Threat and vulnerability Management") and place corresponding evidences in domain folders.
-                                    </li>
-                                    <li>
-                                        <strong>Compress:</strong> Zip the folder structure and zipped file is the upload for full vendor assessment.
-                                    </li>
-                                </ol>
-                            </div>
 
-                            <div className={styles.uploadSection}>
-                                <Upload
-                                    restrictions={{
-                                        allowedExtensions: ['.zip'],
-                                        maxFileSize: 100000000 // 100MB
-                                    }}
-                                    onAdd={handleUploadSuccess}
-                                    saveUrl={''}
-                                    autoUpload={false}
-                                    multiple={false}
-                                />
-                            </div>
-
-                            {error && (
-                                <div className={styles.alertDanger} role="alert">
-                                    {error}
+                {!showReport ? (
+                    <>
+                        {!loading && (
+                            <>
+                                <div className={styles.instructions}>
+                                    <h2 className={styles.instructionsTitle}>How to Prepare Your Upload</h2>
+                                    <ol className={styles.instructionsList}>
+                                        <li>
+                                            <strong>Gather Evidences:</strong> Collect all relevant evidence documents for each control under various domain. Accepted formats are pdf, doc and common image types (PNG, JPG).
+                                        </li>
+                                        <li>
+                                            <strong>Prepare The Upload:</strong> Create a top level folder named on vendor. Place vendor questionnaire here. Create separate folders named on each domain (e.g., "Business continuity", "Threat and vulnerability Management") and place corresponding evidences in domain folders.
+                                        </li>
+                                        <li>
+                                            <strong>Compress:</strong> Zip the folder structure and zipped file is the upload for full vendor assessment.
+                                        </li>
+                                    </ol>
                                 </div>
-                            )}
 
-                            {uploadConfirmation && (
-                                <div className={styles.uploadConfirmation} role="alert">
-                                    {uploadConfirmation}
+
+                                <div className={styles.uploadSection}>
+                                    <Upload
+                                        restrictions={{
+                                            allowedExtensions: ['.zip'],
+                                            maxFileSize: 100000000 // 100MB
+                                        }}
+                                        onAdd={handleUploadSuccess}
+                                        saveUrl={''}
+                                        autoUpload={false}
+                                        multiple={false}
+                                    />
                                 </div>
-                            )}
 
-                            <div className={styles.actionButtons}>
-                                <Button
-                                    disabled={!zipUploaded || loading}
-                                    onClick={handleGenerateReport}
-                                    themeColor={'primary'}
-                                >
-                                    {loading ? 'Processing...' : 'Generate Report'}
-                                </Button>
-                                {zipUploaded && (
-                                    <Button
-                                        disabled={loading || isViewingContents}
-                                        onClick={handleViewZipContents}
-                                        themeColor={'info'}
-                                        fillMode="outline"
-                                    >
-                                        {isViewingContents ? 'Loading Contents...' : 'View ZIP Contents'}
-                                    </Button>
+
+                                {error && (
+                                    <div className={styles.alertDanger} role="alert">
+                                        {error}
+                                    </div>
                                 )}
-                            </div>
-                        </>
-                    )}
-                </>
-            ) : (
-                <>
-                    <div className={styles.actionButtons}>
-                        <Button
-                            onClick={() => setViewMode(viewMode === 'table' ? 'card' : 'table')}
-                            themeColor={'secondary'}
-                        >
-                            {viewMode === 'table' ? 'Card View' : 'Table View'}
-                        </Button>
-                        <Button onClick={downloadExcel} themeColor={'success'}>
-                            Download CSV
-                        </Button>
-                        <Button onClick={startOver} themeColor={'error'} fillMode="outline">
-                            Start Over
-                        </Button>
-                    </div>
-                </>
-            )}
 
 
-            {/* Progress Display */}
-            {loading && !showReport && (
-                <ProgressDisplay 
-                    progress={processingProgress || {
-                        totalControls: 0,
-                        completedControls: 0,
-                        currentControl: '',
-                        status: 'processing',
-                        results: {},
-                        errors: []
-                    }}
-                    isVisible={true}
-                    elapsedTime={elapsedTime}
-                />
-            )}
+                                {uploadConfirmation && (
+                                    <div className={styles.uploadConfirmation} role="alert">
+                                        {uploadConfirmation}
+                                    </div>
+                                )}
 
 
-            {/* ZIP Contents Display */}
-            {showZipContents && (
-                <>
-                    <ZipContentsDisplay
-                        folders={zipContents.folders}
-                        onClose={handleCloseZipContents}
-                        onProceed={handleProceedWithLargeFiles}
-                        questionnaireFile={questionnaireFile}
+                                <div className={styles.actionButtons}>
+                                    <Button
+                                        disabled={!zipUploaded || loading}
+                                        onClick={handleGenerateReport}
+                                        themeColor={'primary'}
+                                    >
+                                        {loading ? 'Processing...' : 'Generate Report'}
+                                    </Button>
+                                    {zipUploaded && (
+                                        <Button
+                                            disabled={loading || isViewingContents}
+                                            onClick={handleViewZipContents}
+                                            themeColor={'info'}
+                                            fillMode="outline"
+                                        >
+                                            {isViewingContents ? 'Loading Contents...' : 'View ZIP Contents'}
+                                        </Button>
+                                    )}
+                                </div>
+                            </>
+                        )}
+                    </>
+                ) : (
+                    <>
+                        <div className={styles.actionButtons}>
+                            <Button
+                                onClick={() => setViewMode(viewMode === 'table' ? 'card' : 'table')}
+                                themeColor={'secondary'}
+                            >
+                                {viewMode === 'table' ? 'Card View' : 'Table View'}
+                            </Button>
+                            <Button onClick={downloadExcel} themeColor={'success'}>
+                                Download CSV
+                            </Button>
+                            <Button onClick={startOver} themeColor={'error'} fillMode="outline">
+                                Start Over
+                            </Button>
+                        </div>
+                    </>
+                )}
+
+
+
+                {/* Enhanced Progress Display */}
+                {loading && !showReport && processingProgress && (
+                    <ProgressDisplay
+                        progress={processingProgress}
+                        isVisible={true}
+                        elapsedTime={elapsedTime}
                     />
-                </>
-            )}
+                )}
 
 
-            {/* Report Display */}
-            {showReport && (
-                <ReportDisplay
-                    results={report}
-                    viewMode={viewMode}
-                    totalTime={elapsedTime}
+                {/* Fallback progress bar for initial loading */}
+                {/* {loading && !showReport && !processingProgress && renderProgressBar()} */}
+
+
+
+                {/* ZIP Contents Display */}
+                {showZipContents && (
+                    <>
+                        <ZipContentsDisplay
+                            folders={zipContents.folders}
+                            onClose={handleCloseZipContents}
+                            onProceed={handleProceedWithLargeFiles}
+                            questionnaireFile={questionnaireFile}
+                        />
+                    </>
+                )}
+
+
+
+                {/* Report Display */}
+                {showReport && (
+                    <ReportDisplay
+                        results={report}
+                        viewMode={viewMode}
+                        totalTime={elapsedTime}
+                    />
+                )}
+
+                {/* Timeout Prevention Modal */}
+                <TimeoutPreventionModal
+                    isOpen={showTimeoutModal}
+                    onConfirm={handleTimeoutConfirmation}
+                    onClose={closeTimeoutModal}
+                    countdown={timeoutCountdown}
                 />
-            )}
-        </div>
-    // {/* </Protected> */}
-);
+            </div>
+        // </Protected>
+    );
 };
+
 
 
 export default FullVendorAnalysis;

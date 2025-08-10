@@ -53,7 +53,12 @@ export const TimeoutPreventionModal: React.FC<TimeoutPreventionModalProps> = ({
                     <h2>⏰ Session Timeout Prevention</h2>
                 </div>
                 <div className={styles['warning-modal-content']}>
-                    <p>Are you still there? Your session will timeout in {countdown} seconds.</p>
+                    <div className={styles['countdown-indicator']}>
+                        <div className={styles['countdown-circle']}>
+                            <span className={styles['countdown-number']}>{countdown}</span>
+                        </div>
+                    </div>
+                    <p>Are you still there? Your session will timeout in <strong>{countdown} seconds</strong>.</p>
                     <p>Click "Yes, I'm here" to keep your session active.</p>
                 </div>
                 <div className={styles['warning-modal-actions']}>

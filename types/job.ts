@@ -1,40 +1,73 @@
+import { ObjectId } from 'mongodb';
+
 export interface Job {
-  _id?: string;
-  UUID: string;
+  _id?: ObjectId;
+  jobId: string;
   userId: string;
-  userName: string;
-  status: 'Pending' | 'Processing' | 'Completed' | 'Failed';
+  status: 'pending' | 'processing' | 'completed' | 'failed';
+  progress: number; // 0-100
   createdAt: Date;
   updatedAt: Date;
-  result?: {
-    report?: any[];
-    error?: string;
-    totalFiles?: number;
-    totalControls?: number;
-    processingTime?: number;
+  startedAt?: Date;
+  completedAt?: Date;
+  
+  // File storage
+  zipFile: {
+    gridfsId: ObjectId;
+    filename: string;
+    size: number;
+    contentType: string;
+    uploadedAt: Date;
   };
-  zipFileName?: string;
-  zipFileSize?: number;
+  
+  // Processing metadata
+  extractedFiles?: ExtractedFile[];
+  results?: JobResult;
+  error?: string;
+  metadata: {
+    totalFiles: number;
+    totalControls: number;
+    currentStep: string;
+  };
 }
 
-export interface CreateJobRequest {
-  userId: string;
-  userName: string;
-  zipFileName: string;
-  zipFileSize: number;
+export interface ExtractedFile {
+  name: string;
+  size: number;
+  gridfsId?: ObjectId;
+  content?: Buffer;
+  contentType: string;
 }
 
-export interface JobResponse {
-  UUID: string;
-  status: string;
+export interface JobResult {
+  controls: ControlEvidence[];
+  report: ReportItem[];
+  summary: string;
+}
+
+// Reusing existing types from your codebase
+export interface ControlEvidence {
+  cid: string;
+  controlName: string;
+  domainIds: string[];
+  evidences: File[];
+}
+
+export interface ReportItem {
+  question: string;
+  answer: string;
+  answerQuality: string;
+  source: string;
+  summary: string;
+  reference: string;
+}
+
+export interface JobStatusResponse {
+  jobId: string;
+  status: Job['status'];
+  progress: number;
+  currentStep: string;
+  error?: string;
   createdAt: Date;
   updatedAt: Date;
-  result?: any;
-  zipFileName?: string;
-  zipFileSize?: number;
-}
-
-export interface JobsListResponse {
-  jobs: JobResponse[];
-  total: number;
 }

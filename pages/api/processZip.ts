@@ -43,7 +43,7 @@ async function processZipFileFromBuffer(buffer: Buffer): Promise<ProcessedZipRes
       console.log('ZIP loaded successfully');
     } catch (zipError) {
       console.error('JSZip loading error:', zipError);
-      throw new Error(`Failed to load ZIP file: ${zipError.message}`);
+      throw new Error(`Failed to load ZIP file: ${zipError instanceof Error ? zipError.message : 'Unknown error'}`);
     }
 
     // Get the root folder name first (needed for questionnaire file detection)
@@ -117,11 +117,13 @@ async function processZipFileFromBuffer(buffer: Buffer): Promise<ProcessedZipRes
           size: fileSize,
           lastModified: fileEntry.date.getTime(),
           base64: dataUrl,
+          webkitRelativePath: '',
+          bytes: () => Promise.resolve(new Uint8Array(content)),
           arrayBuffer: () => Promise.resolve(content),
           stream: () => Buffer.from(content),
           text: () => Promise.resolve(''),
           slice: (start: number, end: number) => content.slice(start, end)
-        };
+        } as unknown as File;
 
         evidences.push(file);
       }
@@ -273,8 +275,8 @@ async function processEvidenceWithLLMNodeJS(
           }));
 
           // Call the existing validateControlBatch API
-          const response = await axios.post(`${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/api/validateControlBatch`, {
-            controlId: prompt.id,
+          const response = await axios.post(`/api/validateControlBatch`, {
+            controlId: controlId,
             designElements: [{
               id: prompt.id,
               prompt: prompt.prompt,
@@ -334,7 +336,9 @@ async function processEvidenceWithLLMNodeJS(
           completedControls,
           totalControls,
           currentControl: controlId,
-          progress: Math.round((completedControls / totalControls) * 100)
+          status: 'processing' as const,
+          results: {},
+          errors: []
         });
       }
 
@@ -474,7 +478,7 @@ async function processZipAsync(jobUUID: string, zipFileBase64: string) {
                 id: element.id,
                 prompt: element.prompt,
                 question: element.question,
-                subQuestion: element.design_element
+                subQuestion: element.design_element || ''
               })),
               files: controlGroup.evidences
             };
@@ -482,7 +486,7 @@ async function processZipAsync(jobUUID: string, zipFileBase64: string) {
         );
         return promptsForGroup;
       })
-    )).flat().filter(Boolean);
+    )).flat().filter((item): item is NonNullable<typeof item> => item !== null);
 
     if (controlPromptList.length === 0) {
       throw new Error('No valid controls found to process after filtering.');

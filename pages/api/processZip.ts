@@ -289,7 +289,10 @@ async function processEvidenceWithLLMNodeJS(
             },
             httpsAgent: new https.Agent({ 
               rejectUnauthorized: false,
-            })
+            }),
+            maxContentLength: 50 * 1024 * 1024, // 50MB
+            maxBodyLength: 50 * 1024 * 1024, // 50MB
+            timeout: 300000 // 5 minutes timeout for large payloads
           });
 
           if (response.data && response.data.results && response.data.results.length > 0) {

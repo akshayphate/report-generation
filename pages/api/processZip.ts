@@ -10,6 +10,7 @@ import JSZip from 'jszip';
 import axios from 'axios';
 import https from 'https';
 import { getToken } from '../../services/getToken';
+import absoluteUrl from 'next-absolute-url';
 
 const collection = mongo.collection;
 
@@ -246,6 +247,7 @@ async function processEvidenceWithLLMNodeJS(
     prompts: Array<{ id: string; prompt: string; question: string; subQuestion: string; }>;
     files: any[];
   }>,
+  req: NextApiRequest,
   onProgress?: (progress: ProcessingProgress) => void
 ): Promise<Record<string, any[]>> {
   const results: Record<string, any[]> = {};
@@ -278,14 +280,12 @@ async function processEvidenceWithLLMNodeJS(
             base64: file.base64
           }));
 
-          // Get base URL for internal API calls (server-side)
-          const baseURL = process.env.NODE_ENV === 'development' 
-            ? 'http://localhost:3000' 
-            : (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000');
-
+          // Get absolute URL using next-absolute-url
+          const { origin } = absoluteUrl(req);
+          
           // Determine app URL path (similar to evidenceService logic)
-          const appURL = baseURL.includes('localhost') || baseURL.includes('clvrw99a1065') ? '' : '/tprss';
-          const fullBaseUrl = `${baseURL}${appURL}`;
+          const appURL = origin.includes('localhost') || origin.includes('clvrw99a1065') ? '' : '/tprss';
+          const fullBaseUrl = `${origin}${appURL}`;
 
           const response = await axios.post(`${fullBaseUrl}/api/validateControlBatch`, {
             controlId: controlId,
@@ -406,7 +406,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     await jobsCollection.insertOne(job);
 
     // Start asynchronous processing
-    processZipAsync(jobUUID, zipFile).catch(error => {
+    processZipAsync(jobUUID, zipFile, req).catch(error => {
       console.error(`Error processing job ${jobUUID}:`, error);
       // Update job status to failed
       jobsCollection.updateOne(
@@ -436,7 +436,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 }
 
-async function processZipAsync(jobUUID: string, zipFileBase64: string) {
+async function processZipAsync(jobUUID: string, zipFileBase64: string, req: NextApiRequest) {
   const jobsCollection = collection('jobs');
 
   try {
@@ -509,7 +509,7 @@ async function processZipAsync(jobUUID: string, zipFileBase64: string) {
       console.log('Progress update:', progress);
     };
 
-    const batchResults = await processEvidenceWithLLMNodeJS(controlPromptList, onProgress);
+    const batchResults = await processEvidenceWithLLMNodeJS(controlPromptList, req, onProgress);
 
     // Transform batch results into report format
     const reportResults = controlPromptList.flatMap(control => {

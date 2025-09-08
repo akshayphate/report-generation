@@ -20,6 +20,7 @@
     "logger": "^0.0.1",
     "mammoth": "^1.9.1",
     "next": "15.3.1",
+    "next-absolute-url": "^1.2.2",
     "openai": "^5.8.2",
     "react": "^19.0.0",
     "react-bootstrap": "^2.10.10",

@@ -2,10 +2,11 @@ import { NextApiRequest, NextApiResponse } from 'next';
 import { v4 as uuidv4 } from 'uuid';
 import { mongo } from '@ctip/toolkit';
 import { Job, CreateJobRequest } from '../../types/job';
-import { processZipFile } from '../../services/ZipfileProcessor';
+import { processZipFile, ProcessedZipResult } from '../../services/ZipfileProcessor';
 import { getDesignElementsByCID, loadDomainList } from '../../services/promptServiceForVendor';
 import { getLLMEvidenceWithProgress, ProcessingProgress } from '../../services/evidenceService';
 import { getDomainIdsFromQuestionnaire } from '../../services/questionnaireService';
+import JSZip from 'jszip';
 
 const collection = mongo.collection;
 
@@ -16,6 +17,207 @@ export const config = {
         },
     },
 };
+
+// Helper function to process ZIP file from buffer (Node.js environment)
+async function processZipFileFromBuffer(buffer: Buffer): Promise<ProcessedZipResult> {
+  const result: Omit<ProcessedZipResult, 'questionnaireFile'> = {
+    controls: [],
+    totalFiles: 0,
+    totalControls: 0,
+    errors: []
+  };
+  let questionnaireFile: { name: string; content: ArrayBuffer } | null = null;
+
+  try {
+    console.log('Starting ZIP file processing from buffer...');
+    const zip = new JSZip();
+    const zipContent = await zip.loadAsync(buffer);
+
+    // Get the root folder name first (needed for questionnaire file detection)
+    const rootFolder = getRootFolderName(zipContent);
+    console.log('Root folder:', rootFolder);
+
+    // Find and extract the Excel file's content first (only at root level)
+    console.log('Searching for questionnaire file at root level...');
+    const allExcelFiles = Object.values(zipContent.files).filter(file => !file.dir && isExcelFile(file.name));
+    console.log('All Excel files found:', allExcelFiles.map(f => f.name));
+
+    const excelFileEntry = allExcelFiles.find(
+      file => isRootLevelFile(file.name, rootFolder)
+    );
+
+    if (excelFileEntry) {
+      console.log(`Found questionnaire file at root level: ${excelFileEntry.name}`);
+      const content = await excelFileEntry.async('arraybuffer');
+      questionnaireFile = { name: excelFileEntry.name, content };
+    } else {
+      console.log('No questionnaire file found at root level');
+    }
+
+    // Load domain list
+    const domainList = await loadDomainList();
+    const domainNameToIdsMap = createDomainNameToIdsMap(domainList);
+
+    // Collect all valid subfolders
+    const subfolders = new Set<string>();
+    Object.entries(zipContent.files).forEach(([path, file]) => {
+      if (file.dir) {
+        const folderName = getSubfolderName(path, rootFolder);
+        if (folderName && (!rootFolder || folderName !== rootFolder)) {
+          subfolders.add(folderName);
+        }
+      }
+    });
+    console.log('Found subfolders:', Array.from(subfolders));
+
+    // Process each subfolder
+    for (const folderName of subfolders) {
+      const normalizedFolderName = normalizeName(folderName);
+      const domainIds = domainNameToIdsMap.get(normalizedFolderName);
+
+      if (!domainIds || domainIds.length === 0) {
+        console.warn(`Could not map folder "${folderName}" to any Domain_Id`);
+        result.errors.push(`Unmapped folder: ${folderName}`);
+        continue;
+      }
+      console.log(`Mapped folder "${folderName}" to Domain IDs:`, domainIds);
+
+      // Find all files in this folder
+      const folderPrefix = rootFolder ? `${rootFolder}/${folderName}/` : `${folderName}/`;
+      const folderFiles = Object.entries(zipContent.files)
+        .filter(([path, file]) => !file.dir && path.startsWith(folderPrefix));
+
+      const evidences: File[] = [];
+      for (const [filePath, fileEntry] of folderFiles) {
+        const content = await fileEntry.async('arraybuffer');
+        const fileName = getFolderName(filePath);
+        const fileType = getMimeType(fileName);
+        const fileSize = content.byteLength;
+
+        // Create a File object with size information
+        const file = new File([content], fileName, {
+          type: fileType,
+          lastModified: fileEntry.date.getTime()
+        });
+
+        // Add custom size property to the file object
+        Object.defineProperty(file, 'size', {
+          value: fileSize,
+          writable: false
+        });
+
+        evidences.push(file);
+      }
+
+      // Add to controls array
+      result.controls.push({
+        cid: domainIds[0], // Use first matching Domain_Id
+        controlName: folderName,
+        domainIds,
+        evidences
+      });
+      console.log(`Added control group "${folderName}" with ${evidences.length} evidence files`);
+    }
+
+    result.totalFiles = result.controls.reduce((sum, control) => sum + control.evidences.length, 0);
+    result.totalControls = result.controls.length;
+
+    console.log('ZIP processing complete:', {
+      totalControls: result.totalControls,
+      totalFiles: result.totalFiles,
+      errors: result.errors,
+      questionnaireFile
+    });
+
+    return { ...result, questionnaireFile };
+
+  } catch (error) {
+    console.error('Error processing ZIP file:', error);
+    throw error;
+  }
+}
+
+// Helper functions (copied from ZipfileProcessor.ts)
+function normalizeName(name: string): string {
+  return name.trim().toLowerCase();
+}
+
+function createDomainNameToIdsMap(domains: any[]): Map<string, string[]> {
+  const domainNameToIdsMap: Map<string, string[]> = new Map();
+  for (const item of domains) {
+    const name = item.Domain_Name.trim().toLowerCase();
+    if (!domainNameToIdsMap.has(name)) {
+      domainNameToIdsMap.set(name, []);
+    }
+    domainNameToIdsMap.get(name)?.push(item.Domain_Id);
+  }
+  return domainNameToIdsMap;
+}
+
+function getRootFolderName(zipContent: JSZip): string | null {
+  const paths = Object.keys(zipContent.files);
+  const rootFolders = paths
+    .filter(path => {
+      const parts = path.split('/').filter(Boolean);
+      return parts.length === 1 && zipContent.files[path].dir;
+    })
+    .map(path => path.replace('/', ''));
+  return rootFolders.length > 0 ? rootFolders[0] : null;
+}
+
+function getSubfolderName(path: string, rootFolder: string | null): string {
+  const normalized = normalizePath(path);
+  const parts = normalized.split('/').filter(Boolean);
+  if (rootFolder && parts[0] === rootFolder && parts.length > 1) {
+    return parts[1];
+  }
+  return parts[0] || '';
+}
+
+function normalizePath(path: string): string {
+  return path.replace(/[\\/]+/g, '/').trim();
+}
+
+function getFolderName(path: string): string {
+  const normalized = normalizePath(path);
+  const parts = normalized.split('/').filter(Boolean);
+  return parts[parts.length - 1] || '';
+}
+
+function getMimeType(fileName: string): string {
+  const extension = fileName.split('.').pop()?.toLowerCase();
+  switch (extension) {
+    case 'pdf':
+      return 'application/pdf';
+    case 'jpg':
+    case 'jpeg':
+      return 'image/jpeg';
+    case 'png':
+      return 'image/png';
+    case 'txt':
+      return 'text/plain';
+    default:
+      return 'application/octet-stream';
+  }
+}
+
+function isExcelFile(fileName: string): boolean {
+  const extension = fileName.split('.').pop()?.toLowerCase();
+  return extension === 'xlsx' || extension === 'xls' || extension === 'xlsm';
+}
+
+function isRootLevelFile(filePath: string, rootFolder: string | null): boolean {
+  const normalizedPath = normalizePath(filePath);
+  const pathParts = normalizedPath.split('/').filter(Boolean);
+  
+  if (rootFolder) {
+    const isRootLevel = pathParts.length === 2 && pathParts[0] === rootFolder;
+    return isRootLevel;
+  } else {
+    const isRootLevel = pathParts.length === 1;
+    return isRootLevel;
+  }
+}
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') {
@@ -96,13 +298,12 @@ async function processZipAsync(jobUUID: string, zipFileBase64: string) {
 
     const startTime = Date.now();
 
-    // Convert base64 back to File object
+    // Convert base64 back to binary data
     const base64Data = zipFileBase64.split(',')[1];
     const binaryData = Buffer.from(base64Data, 'base64');
-    const zipFile = new File([binaryData], 'upload.zip', { type: 'application/zip' });
-
-    // Process the ZIP file
-    const zipResult = await processZipFile(zipFile);
+    
+    // Process ZIP file directly with binary data
+    const zipResult = await processZipFileFromBuffer(binaryData);
     console.log('ZIP processing result:', zipResult);
 
     // Get domain IDs from excel file if it exists

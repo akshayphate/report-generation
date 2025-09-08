@@ -7,6 +7,8 @@ import { getDesignElementsByCID, loadDomainList } from '../../services/promptSer
 import { getLLMEvidenceWithProgress, ProcessingProgress } from '../../services/evidenceService';
 import { getDomainIdsFromQuestionnaire } from '../../services/questionnaireService';
 import JSZip from 'jszip';
+import axios from 'axios';
+import https from 'https';
 
 const collection = mongo.collection;
 
@@ -105,11 +107,21 @@ async function processZipFileFromBuffer(buffer: Buffer): Promise<ProcessedZipRes
         const fileType = getMimeType(fileName);
         const fileSize = content.byteLength;
 
-        // Create a proper File object for Node.js environment
-        const file = new File([content], fileName, {
+        // Create a file-like object with base64 content for Node.js environment
+        const base64Content = Buffer.from(content).toString('base64');
+        const dataUrl = `data:${fileType};base64,${base64Content}`;
+        
+        const file = {
+          name: fileName,
           type: fileType,
-          lastModified: fileEntry.date.getTime()
-        });
+          size: fileSize,
+          lastModified: fileEntry.date.getTime(),
+          base64: dataUrl,
+          arrayBuffer: () => Promise.resolve(content),
+          stream: () => Buffer.from(content),
+          text: () => Promise.resolve(''),
+          slice: (start: number, end: number) => content.slice(start, end)
+        };
 
         evidences.push(file);
       }
@@ -222,6 +234,125 @@ function isRootLevelFile(filePath: string, rootFolder: string | null): boolean {
     const isRootLevel = pathParts.length === 1;
     return isRootLevel;
   }
+}
+
+// Node.js compatible evidence processing function
+async function processEvidenceWithLLMNodeJS(
+  controlPromptList: Array<{
+    controlId: string;
+    prompts: Array<{ id: string; prompt: string; question: string; subQuestion: string; }>;
+    files: any[];
+  }>,
+  onProgress?: (progress: ProcessingProgress) => void
+): Promise<Record<string, any[]>> {
+  const results: Record<string, any[]> = {};
+  let completedControls = 0;
+  const totalControls = controlPromptList.length;
+
+  for (const control of controlPromptList) {
+    if (!control) continue;
+    
+    const { controlId, prompts, files } = control;
+    const controlResults: any[] = [];
+
+    try {
+      // Get system prompt from database
+      const system_prompt = await collection('Prompts').findOne({ Prompt_Name: "System Prompt" });
+      
+      if (!system_prompt) {
+        throw new Error('System prompt not found');
+      }
+
+      // Process each prompt for this control
+      for (const prompt of prompts) {
+        try {
+          // Prepare evidence data (files already have base64 content)
+          const evidences = files.map(file => ({
+            name: file.name,
+            base64: file.base64
+          }));
+
+          // Call the existing validateControlBatch API
+          const response = await axios.post(`${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/api/validateControlBatch`, {
+            controlId: prompt.id,
+            designElements: [{
+              id: prompt.id,
+              prompt: prompt.prompt,
+              question: prompt.question,
+              subQuestion: prompt.subQuestion
+            }],
+            evidences: evidences
+          }, {
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${process.env.LLM_API_KEY || 'dummy-token'}`
+            },
+            httpsAgent: new https.Agent({ 
+              rejectUnauthorized: false,
+            })
+          });
+
+          if (response.data && response.data.results && response.data.results.length > 0) {
+            const result = response.data.results[0];
+            controlResults.push({
+              designElementId: prompt.id,
+              designElement: prompt.subQuestion,
+              answer: result.answer,
+              status: result.status,
+              error: result.error
+            });
+          } else {
+            controlResults.push({
+              designElementId: prompt.id,
+              designElement: prompt.subQuestion,
+              answer: '',
+              status: 'error',
+              error: 'No response from LLM'
+            });
+          }
+        } catch (error) {
+          console.error(`Error processing prompt ${prompt.id}:`, error);
+          controlResults.push({
+            designElementId: prompt.id,
+            designElement: prompt.subQuestion,
+            answer: '',
+            status: 'error',
+            error: error instanceof Error ? error.message : 'Unknown error'
+          });
+        }
+      }
+
+      results[controlId] = controlResults;
+      completedControls++;
+
+      // Update progress
+      if (onProgress) {
+        onProgress({
+          completedControls,
+          totalControls,
+          currentControl: controlId,
+          progress: Math.round((completedControls / totalControls) * 100)
+        });
+      }
+
+    } catch (error) {
+      console.error(`Error processing control ${controlId}:`, error);
+      // Add error results for all prompts in this control
+      for (const prompt of prompts) {
+        controlResults.push({
+          designElementId: prompt.id,
+          designElement: prompt.subQuestion,
+          answer: '',
+          status: 'error',
+          error: error instanceof Error ? error.message : 'Unknown error'
+        });
+      }
+      results[controlId] = controlResults;
+      completedControls++;
+    }
+  }
+
+  return results;
 }
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
@@ -354,12 +485,12 @@ async function processZipAsync(jobUUID: string, zipFileBase64: string) {
       throw new Error('No valid controls found to process after filtering.');
     }
 
-    // Process with LLM using progress tracking
+    // Process with LLM using Node.js compatible method
     const onProgress = (progress: ProcessingProgress) => {
       console.log('Progress update:', progress);
     };
 
-    const batchResults = await getLLMEvidenceWithProgress(controlPromptList, onProgress);
+    const batchResults = await processEvidenceWithLLMNodeJS(controlPromptList, onProgress);
 
     // Transform batch results into report format
     const reportResults = controlPromptList.flatMap(control => {

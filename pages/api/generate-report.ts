@@ -3,6 +3,14 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import { GenerateReportResponse, ReportItem, FileWithBase64 } from '../../types/report';
 
+// Add this configuration
+export const config = {
+    api: {
+        bodyParser: {
+            sizeLimit: '50mb', // Allow up to 50MB file uploads
+        },
+    },
+};
 
 interface RequestBody {
   evidenceFiles: FileWithBase64[];

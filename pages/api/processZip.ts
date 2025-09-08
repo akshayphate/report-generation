@@ -9,6 +9,7 @@ import { getDomainIdsFromQuestionnaire } from '../../services/questionnaireServi
 import JSZip from 'jszip';
 import axios from 'axios';
 import https from 'https';
+import { getToken } from '../../services/getToken';
 
 const collection = mongo.collection;
 
@@ -251,6 +252,9 @@ async function processEvidenceWithLLMNodeJS(
   let completedControls = 0;
   const totalControls = controlPromptList.length;
 
+  // Get the proper user session token
+  const token = await getToken();
+
   for (const control of controlPromptList) {
     if (!control) continue;
     
@@ -274,9 +278,16 @@ async function processEvidenceWithLLMNodeJS(
             base64: file.base64
           }));
 
-          // Call the existing validateControlBatch API
-          const baseUrl = process.env.NEXTAUTH_URL?.replace('/api/auth', '') || 'http://localhost:3000';
-          const response = await axios.post(`${baseUrl}/api/validateControlBatch`, {
+          // Get base URL for internal API calls (server-side)
+          const baseURL = process.env.NODE_ENV === 'development' 
+            ? 'http://localhost:3000' 
+            : (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000');
+
+          // Determine app URL path (similar to evidenceService logic)
+          const appURL = baseURL.includes('localhost') || baseURL.includes('clvrw99a1065') ? '' : '/tprss';
+          const fullBaseUrl = `${baseURL}${appURL}`;
+
+          const response = await axios.post(`${fullBaseUrl}/api/validateControlBatch`, {
             controlId: controlId,
             designElements: [{
               id: prompt.id,
@@ -288,7 +299,7 @@ async function processEvidenceWithLLMNodeJS(
           }, {
             headers: {
               'Content-Type': 'application/json',
-              'Authorization': `Bearer ${process.env.LLM_API_KEY || 'dummy-token'}`
+              'Authorization': `Bearer ${token}` // Use proper user session token
             },
             httpsAgent: new https.Agent({ 
               rejectUnauthorized: false,

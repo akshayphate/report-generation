@@ -15,9 +15,9 @@ The application has been refactored to:
 ### Backend Changes
 
 #### 1. MongoDB Integration
-- **File**: `lib/mongodb.ts`
-- **Purpose**: Database connection management
-- **Environment Variable**: `MONGODB_URI`
+- **Library**: `@ctip/toolkit` (existing)
+- **Purpose**: Uses existing CTIP MongoDB connection
+- **Collection**: `mongo.collection('jobs')`
 
 #### 2. Job Schema
 - **File**: `types/job.ts`
@@ -85,37 +85,11 @@ The application has been refactored to:
 
 ## Setup Instructions
 
-### 1. Environment Variables
-Add to your `.env.local` file:
-```bash
-MONGODB_URI=mongodb://localhost:27017/report-generation
-# Or for MongoDB Atlas:
-# MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/report-generation
-```
+### 1. Dependencies
+No additional dependencies required. The implementation uses the existing `@ctip/toolkit` library that's already configured in your application.
 
 ### 2. MongoDB Setup
-#### Local MongoDB:
-```bash
-# Install MongoDB locally
-# Start MongoDB service
-mongod
-
-# Create database (optional, will be created automatically)
-mongo
-use report-generation
-```
-
-#### MongoDB Atlas:
-1. Create a MongoDB Atlas account
-2. Create a new cluster
-3. Get connection string
-4. Add to environment variables
-
-### 3. Dependencies
-The following packages have been added:
-```bash
-npm install mongodb mongoose
-```
+MongoDB is already configured through the CTIP library. The jobs will be stored in the `jobs` collection in your existing MongoDB database.
 
 ## User Workflow
 
@@ -207,11 +181,11 @@ npm install mongodb mongoose
 
 ### Common Issues
 
-#### 1. MongoDB Connection
+#### 1. CTIP Library Connection
 ```bash
-Error: Please add your MongoDB URI to .env.local
+Error: CTIP toolkit not available
 ```
-**Solution**: Add `MONGODB_URI` to environment variables
+**Solution**: Ensure `@ctip/toolkit` is properly configured in your application
 
 #### 2. Job Not Found
 ```bash
@@ -220,7 +194,7 @@ Error: Job not found or access denied
 **Solution**: Ensure userId matches job owner
 
 #### 3. Processing Failures
-- Check MongoDB connection
+- Check CTIP MongoDB connection
 - Verify ZIP file format
 - Review server logs for detailed errors
 

@@ -1,6 +1,8 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import { getDatabase } from '../../lib/mongodb';
+import { mongo } from '@ctip/toolkit';
 import { Job, JobsListResponse } from '../../types/job';
+
+const collection = mongo.collection;
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse<JobsListResponse | { error: string }>) {
   if (req.method !== 'GET') {
@@ -14,8 +16,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
       return res.status(400).json({ error: 'Missing or invalid userId parameter' });
     }
 
-    const db = await getDatabase();
-    const jobsCollection = db.collection<Job>('jobs');
+    const jobsCollection = collection('jobs');
 
     // Fetch all jobs for the user, sorted by creation date (newest first)
     const jobs = await jobsCollection
@@ -24,7 +25,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
       .toArray();
 
     // Transform jobs to response format (exclude sensitive data)
-    const jobResponses = jobs.map(job => ({
+    const jobResponses = jobs.map((job: any) => ({
       UUID: job.UUID,
       status: job.status,
       createdAt: job.createdAt,
@@ -42,8 +43,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
   } catch (error) {
     console.error('Error fetching jobs:', error);
     return res.status(500).json({ 
-      error: 'Failed to fetch jobs',
-      message: error instanceof Error ? error.message : 'Unknown error'
+      error: 'Failed to fetch jobs'
     });
   }
 }

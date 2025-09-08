@@ -1,11 +1,13 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import { v4 as uuidv4 } from 'uuid';
-import { getDatabase } from '../../lib/mongodb';
+import { mongo } from '@ctip/toolkit';
 import { Job, CreateJobRequest } from '../../types/job';
 import { processZipFile } from '../../services/ZipfileProcessor';
 import { getDesignElementsByCID, loadDomainList } from '../../services/promptServiceForVendor';
 import { getLLMEvidenceWithProgress, ProcessingProgress } from '../../services/evidenceService';
 import { getDomainIdsFromQuestionnaire } from '../../services/questionnaireService';
+
+const collection = mongo.collection;
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') {
@@ -22,9 +24,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     // Generate UUID for the job
     const jobUUID = uuidv4();
 
-    // Create job document in MongoDB
-    const db = await getDatabase();
-    const jobsCollection = db.collection<Job>('jobs');
+    // Create job document in MongoDB using CTIP
+    const jobsCollection = collection('jobs');
 
     const job: Job = {
       UUID: jobUUID,
@@ -71,8 +72,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 }
 
 async function processZipAsync(jobUUID: string, zipFileBase64: string) {
-  const db = await getDatabase();
-  const jobsCollection = db.collection<Job>('jobs');
+  const jobsCollection = collection('jobs');
 
   try {
     // Update status to Processing
@@ -149,6 +149,7 @@ async function processZipAsync(jobUUID: string, zipFileBase64: string) {
 
     // Transform batch results into report format
     const reportResults = controlPromptList.flatMap(control => {
+      if (!control) return [];
       const resultsForControl = batchResults[control.controlId] || [];
       const mainQuestion = mainQuestionMap.get(control.controlId) || 'Unknown Question';
 

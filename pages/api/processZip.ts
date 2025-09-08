@@ -30,8 +30,19 @@ async function processZipFileFromBuffer(buffer: Buffer): Promise<ProcessedZipRes
 
   try {
     console.log('Starting ZIP file processing from buffer...');
+    console.log('Buffer length:', buffer.length);
+    console.log('Buffer type:', typeof buffer);
+    console.log('Buffer constructor:', buffer.constructor.name);
+    
     const zip = new JSZip();
-    const zipContent = await zip.loadAsync(buffer);
+    let zipContent;
+    try {
+      zipContent = await zip.loadAsync(buffer);
+      console.log('ZIP loaded successfully');
+    } catch (zipError) {
+      console.error('JSZip loading error:', zipError);
+      throw new Error(`Failed to load ZIP file: ${zipError.message}`);
+    }
 
     // Get the root folder name first (needed for questionnaire file detection)
     const rootFolder = getRootFolderName(zipContent);
@@ -94,16 +105,10 @@ async function processZipFileFromBuffer(buffer: Buffer): Promise<ProcessedZipRes
         const fileType = getMimeType(fileName);
         const fileSize = content.byteLength;
 
-        // Create a File object with size information
+        // Create a proper File object for Node.js environment
         const file = new File([content], fileName, {
           type: fileType,
           lastModified: fileEntry.date.getTime()
-        });
-
-        // Add custom size property to the file object
-        Object.defineProperty(file, 'size', {
-          value: fileSize,
-          writable: false
         });
 
         evidences.push(file);

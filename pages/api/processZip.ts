@@ -275,7 +275,8 @@ async function processEvidenceWithLLMNodeJS(
           }));
 
           // Call the existing validateControlBatch API
-          const response = await axios.post(`/api/validateControlBatch`, {
+          const baseUrl = process.env.NEXTAUTH_URL?.replace('/api/auth', '') || 'http://localhost:3000';
+          const response = await axios.post(`${baseUrl}/api/validateControlBatch`, {
             controlId: controlId,
             designElements: [{
               id: prompt.id,

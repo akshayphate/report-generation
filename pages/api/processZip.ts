@@ -9,6 +9,14 @@ import { getDomainIdsFromQuestionnaire } from '../../services/questionnaireServi
 
 const collection = mongo.collection;
 
+export const config = {
+    api: {
+        bodyParser: {
+            sizeLimit: '50mb', // Allow up to 50MB file uploads
+        },
+    },
+};
+
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });

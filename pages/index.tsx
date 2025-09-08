@@ -46,9 +46,16 @@ export default function Home() {
               onClick={() => navigateTo('/assess')}
             >
               <h2>Full Vendor Assessment</h2>
-              <p>Perform a comprehensive vendor assessment.</p>
+              <p>Submit a ZIP file for comprehensive vendor assessment.</p>
             </div>
 
+            <div
+              className={styles.optionCard}
+              onClick={() => navigateTo('/jobs')}
+            >
+              <h2>My Assessment Jobs</h2>
+              <p>Track and view your submitted assessment jobs.</p>
+            </div>
 
             <div
               className={styles.optionCard}

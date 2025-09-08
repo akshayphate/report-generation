@@ -27,6 +27,182 @@
     --border-radius: 0.375rem;
 }
 
+/* Job Tracking Styles */
+.loadingContainer {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 200px;
+}
+
+.header {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.header h1 {
+    color: var(--wf-red);
+    margin-bottom: 0.5rem;
+}
+
+.emptyState {
+    text-align: center;
+    padding: 3rem;
+    background: var(--wf-white);
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-sm);
+}
+
+.jobsList {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.jobCard {
+    background: var(--wf-white);
+    border: 1px solid var(--wf-border-color);
+    border-radius: var(--border-radius);
+    padding: 1.5rem;
+    box-shadow: var(--shadow-sm);
+    transition: box-shadow 0.2s ease;
+}
+
+.jobCard:hover {
+    box-shadow: var(--shadow-md);
+}
+
+.jobHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 1rem;
+}
+
+.jobInfo h3 {
+    margin: 0 0 0.5rem 0;
+    color: var(--wf-text);
+}
+
+.jobUUID {
+    font-family: monospace;
+    font-size: 0.875rem;
+    color: #666;
+    margin: 0.25rem 0;
+}
+
+.jobDate, .jobSize {
+    font-size: 0.875rem;
+    color: #666;
+    margin: 0.25rem 0;
+}
+
+.jobStatus {
+    display: flex;
+    align-items: center;
+}
+
+.statusBadge {
+    padding: 0.25rem 0.75rem;
+    border-radius: 1rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.025em;
+}
+
+.statusPending {
+    background-color: #e3f2fd;
+    color: #1976d2;
+}
+
+.statusProcessing {
+    background-color: #fff3e0;
+    color: #f57c00;
+}
+
+.statusCompleted {
+    background-color: #e8f5e8;
+    color: var(--success-green);
+}
+
+.statusFailed {
+    background-color: #ffebee;
+    color: #d32f2f;
+}
+
+.jobActions {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    margin-bottom: 1rem;
+}
+
+.jobSummary {
+    background: var(--wf-light-gray);
+    padding: 1rem;
+    border-radius: var(--border-radius);
+    margin-top: 1rem;
+}
+
+.jobSummary p {
+    margin: 0.25rem 0;
+    font-size: 0.875rem;
+}
+
+.errorMessage {
+    background: #ffebee;
+    color: #d32f2f;
+    padding: 0.75rem;
+    border-radius: var(--border-radius);
+    margin-top: 1rem;
+    font-size: 0.875rem;
+}
+
+.reportHeader {
+    text-align: center;
+    margin-bottom: 2rem;
+    padding: 1.5rem;
+    background: var(--wf-white);
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-sm);
+}
+
+.reportHeader h2 {
+    color: var(--wf-red);
+    margin-bottom: 0.5rem;
+}
+
+.reportHeader p {
+    margin: 0.25rem 0;
+    color: #666;
+    font-size: 0.875rem;
+}
+
+.successContainer {
+    text-align: center;
+    padding: 2rem;
+}
+
+.successMessage {
+    background: var(--wf-white);
+    border: 2px solid var(--success-green);
+    border-radius: var(--border-radius);
+    padding: 2rem;
+    margin-bottom: 2rem;
+    box-shadow: var(--shadow-sm);
+}
+
+.successMessage h2 {
+    color: var(--success-green);
+    margin-bottom: 1rem;
+}
+
+.successMessage p {
+    margin: 0.5rem 0;
+    color: var(--wf-text);
+}
+
 
 /* 2. GENERAL & LAYOUT STYLES */
 .container {

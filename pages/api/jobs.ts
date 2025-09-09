@@ -19,7 +19,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
     const jobsCollection = collection('jobs');
 
     // Fetch all jobs for the user
-    const jobs = await jobsCollection.find({ userId }).toArray();
+    const jobs = await jobsCollection.findToArray({ userId });
 
     // Transform jobs to response format (exclude sensitive data)
     const jobResponses = jobs.map((job: any) => ({

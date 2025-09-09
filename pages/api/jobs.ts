@@ -19,10 +19,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
     const jobsCollection = collection('jobs');
 
     // Fetch all jobs for the user, sorted by creation date (newest first)
-    const jobs = await jobsCollection
-      .find({ userId })
-      .sort({ createdAt: -1 })
-      .toArray();
+    const jobs = await jobsCollection.find({ userId }).toArray();
+    
+    // Sort by creation date (newest first) in JavaScript
+    jobs.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 
     // Transform jobs to response format (exclude sensitive data)
     const jobResponses = jobs.map((job: any) => ({

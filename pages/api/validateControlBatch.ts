@@ -6,12 +6,8 @@
 */
 
 import { NextApiRequest, NextApiResponse } from 'next';
-import { OpenAI } from 'openai';
 import { v4 as uuidv4 } from 'uuid';
-import https from 'https';
-import { mongo, logger } from '@ctip/toolkit';
-import { ChatCompletionMessageParam } from 'openai/resources/chat';
-const collection = mongo.collection;
+import { validateControlBatchCore, BatchRequest } from '../../services/validateControlService';
 
 export const config = {
     api: {
@@ -38,20 +34,6 @@ const getHeaders = (token: string) => {
         'x-wf-usecase-id': `${USECASE_ID}`
     };
     return outheaders;
-}
-
-interface BatchDesignElement {
-    id: string;
-    prompt: string;
-    question: string;
-    subQuestion: string;
-    designElement?: string;
-}
-
-interface BatchRequest {
-    controlId: string;
-    designElements: BatchDesignElement[];
-    evidences: Array<{ name: string; base64: string }>;
 }
 
 interface BatchResponse {
@@ -91,99 +73,7 @@ export default async function validateControlBatchHandler(
             return res.status(401).json({ error: 'Missing or invalid Authorization header' });
         }
         const token = authHeader.split(' ')[1];
-
-        const LLM_API_BASE_URL = process.env.GENERATE_UAT_URL;
-        const LLM_MODEL = process.env.LLM_MODEL;
-
-        if (!LLM_API_BASE_URL || !LLM_MODEL) {
-            throw new Error('Missing required environment variables');
-        }
-
-        const headers = getHeaders(token);
-        const client = new OpenAI({
-            apiKey: token,
-            baseURL: LLM_API_BASE_URL,
-            httpAgent: new https.Agent({ 
-                rejectUnauthorized: false,
-            }),
-            defaultHeaders: headers,
-        });
-
-        const system_prompt = await collection('Prompts').findOne({ Prompt_Name: "System Prompt" });
-        console.log("system prompt is : ",system_prompt);
-
-        // Process each design element
-        const results = await Promise.all(
-            designElements.map(async (designElement) => {
-                try {
-                    const contentArray: any[] = [
-                        {
-                            type: 'text',
-                            text: designElement.prompt,
-                        },
-                        ...evidences.map(({ name, base64 }: { name: string; base64: string }) => ({
-                            type: 'text',
-                            text: `Evidence Name: ${name}`, // Include the evidence name
-                        })),
-                        ...evidences.map(({ base64 }: { name: string; base64: string }) => ({
-                            type: 'image_url',
-                            image_url: {
-                                url: base64, // Include the base64 data
-                            },
-                        })),
-                        {
-                            type: 'text',
-                            text: designElement.question,
-                        }
-                    ];
-
-                    const messages = [
-                        {
-                            role: 'system' as const,
-                            content: [{ type: 'text', text: system_prompt.Prompt }],
-                        },
-                        {
-                            role: 'user' as const,
-                            content: contentArray
-                        },
-                    ] as ChatCompletionMessageParam[];
-                    console.log("content array : ", contentArray)
-
-                    const completion = await client.chat.completions.create({
-                        model: LLM_MODEL,
-                        messages,
-                        temperature: 0,
-                        top_p: 1,
-                        max_tokens: 8192,
-                        seed: 42
-                    });
-
-                    const answer = completion.choices[0]?.message?.content ?? '';
-                    
-                    return {
-                        designElementId: designElement.id,
-                        designElement: designElement.designElement,
-                        answer,
-                        status: 'success' as const
-                    };
-                } catch (error) {
-                    console.error(`Error processing design element ${designElement.id}:`, error);
-                    return {
-                        designElementId: designElement.id,
-                        designElement: designElement.designElement,
-                        answer: '',
-                        status: 'error' as const,
-                        error: error instanceof Error ? error.message : 'Unknown error'
-                    };
-                }
-            })
-        );
-
-        const response: BatchResponse = {
-            controlId,
-            results
-        };
-
+        const response = await validateControlBatchCore({ controlId, designElements, evidences }, token);
         return res.status(200).json(response);
     } catch (error) {
         console.error('validateControlBatch error:', error);

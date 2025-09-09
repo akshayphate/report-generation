@@ -11,6 +11,7 @@ import axios from 'axios';
 import https from 'https';
 import { getToken } from '../../services/getToken';
 import absoluteUrl from 'next-absolute-url';
+import { validateControlBatchCore } from '../../services/validateControlService';
 
 const collection = mongo.collection;
 
@@ -280,14 +281,8 @@ async function processEvidenceWithLLMNodeJS(
             base64: file.base64
           }));
 
-          // Get absolute URL using next-absolute-url
-          const { origin } = absoluteUrl(req);
-          
-          // Determine app URL path (similar to evidenceService logic)
-          const appURL = origin.includes('localhost') || origin.includes('clvrw99a1065') ? '' : '/tprss';
-          const fullBaseUrl = `${origin}${appURL}`;
-
-          const response = await axios.post(`${fullBaseUrl}/api/validateControlBatch`, {
+          // Call core validation directly (avoid REST hop)
+          const response = await validateControlBatchCore({
             controlId: controlId,
             designElements: [{
               id: prompt.id,
@@ -296,21 +291,10 @@ async function processEvidenceWithLLMNodeJS(
               subQuestion: prompt.subQuestion
             }],
             evidences: evidences
-          }, {
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${token}` // Use proper user session token
-            },
-            httpsAgent: new https.Agent({ 
-              rejectUnauthorized: false,
-            }),
-            maxContentLength: 50 * 1024 * 1024, // 50MB
-            maxBodyLength: 50 * 1024 * 1024, // 50MB
-            timeout: 300000 // 5 minutes timeout for large payloads
-          });
+          }, token);
 
-          if (response.data && response.data.results && response.data.results.length > 0) {
-            const result = response.data.results[0];
+          if (response && response.results && response.results.length > 0) {
+            const result = response.results[0];
             controlResults.push({
               designElementId: prompt.id,
               designElement: prompt.subQuestion,

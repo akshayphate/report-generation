@@ -17,6 +17,7 @@ const JobsPage: React.FC = () => {
   const [showReport, setShowReport] = useState(false);
   const [viewMode, setViewMode] = useState<"card" | "table">("table");
   const [refreshingJobs, setRefreshingJobs] = useState<Set<string>>(new Set());
+  const [showControlsProcessed, setShowControlsProcessed] = useState(true);
   // const user = useContext(AppContext);
   const userName =  "Guest";
   const router = useRouter();
@@ -260,9 +261,17 @@ const JobsPage: React.FC = () => {
           onClick={() => router.push("/assess")}
           themeColor={"success"}
           fillMode="outline"
-          style={{ marginLeft: "8px" }}
+          className={styles.actionButton}
         >
           Submit a New Assessment
+        </Button>
+        <Button
+          onClick={() => setShowControlsProcessed(!showControlsProcessed)}
+          themeColor={"info"}
+          fillMode="outline"
+          className={styles.actionButton}
+        >
+          {showControlsProcessed ? "Hide" : "Show"} Controls Processed
         </Button>
       </div>
 
@@ -366,7 +375,7 @@ const JobsPage: React.FC = () => {
               )}
 
 
-              {job.status === "Processing" && job.progress && (
+              {job.status === "Processing" && job.progress && showControlsProcessed && (
                 <div className={styles.jobSummary}>
                   <p>
                     <strong>Controls Processed:</strong> {job.progress.completedControls} of {job.progress.totalControls}
@@ -374,9 +383,7 @@ const JobsPage: React.FC = () => {
                   <div className={styles.progressBar}>
                     <div
                       className={styles.progressBarFill}
-                      style={{
-                        width: `${Math.round((job.progress.completedControls / job.progress.totalControls) * 100)}%`
-                      }}
+                      style={{'--progress-width': `${Math.round((job.progress.completedControls / job.progress.totalControls) * 100)}%`} as React.CSSProperties}
                     />
                   </div>
                   <div className={styles.progressPercentage}>

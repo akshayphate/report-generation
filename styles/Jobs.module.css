@@ -4,7 +4,7 @@
 
 /* Main container */
 .container {
-  max-width: 1200px;
+  max-width: 800px;
   margin: 0 auto;
   padding: var(--spacing-xl);
   background-color: var(--bg-secondary);
@@ -99,6 +99,10 @@
   flex-wrap: wrap;
 }
 
+.actionButton {
+  margin-left: 8px;
+}
+
 /* Alert messages */
 .alertDanger {
   background-color: #fef2f2;
@@ -123,7 +127,7 @@
   background: var(--bg-primary);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-lg);
-  padding: var(--spacing-xl);
+  padding: var(--spacing-lg);
   box-shadow: var(--shadow-sm);
   transition: all 0.2s ease;
   position: relative;
@@ -133,17 +137,6 @@
 .jobCard:hover {
   box-shadow: var(--shadow-md);
   transform: translateY(-1px);
-}
-
-.jobCard::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 4px;
-  background: linear-gradient(90deg, var(--primary-color), var(--primary-light));
-  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
 }
 
 /* Job header */
@@ -295,6 +288,7 @@
   background: linear-gradient(90deg, var(--primary-color), var(--primary-light));
   border-radius: var(--radius-sm);
   transition: width 0.3s ease;
+  width: var(--progress-width, 0%);
 }
 
 .progressPercentage {

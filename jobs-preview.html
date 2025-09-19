@@ -57,7 +57,7 @@
 
         /* Main container */
         .container {
-          max-width: 1200px;
+          max-width: 800px;
           margin: 0 auto;
           padding: var(--spacing-xl);
           background-color: var(--bg-secondary);
@@ -150,16 +150,6 @@
           transform: translateY(-1px);
         }
 
-        .jobCard::before {
-          content: '';
-          position: absolute;
-          top: 0;
-          left: 0;
-          right: 0;
-          height: 4px;
-          background: linear-gradient(90deg, var(--primary-color), var(--primary-light));
-          border-radius: var(--radius-lg) var(--radius-lg) 0 0;
-        }
 
         /* Job header */
         .jobHeader {
@@ -310,6 +300,7 @@
           background: linear-gradient(90deg, var(--primary-color), var(--primary-light));
           border-radius: var(--radius-sm);
           transition: width 0.3s ease;
+          width: var(--progress-width, 0%);
         }
 
         .progressPercentage {
@@ -398,6 +389,7 @@
         <div class="actionButtons">
             <button class="btn">Refresh Jobs</button>
             <button class="btn btn-primary">Submit a New Assessment</button>
+            <button class="btn" onclick="toggleControls()">Hide Controls Processed</button>
         </div>
 
         <div class="jobsList">
@@ -446,10 +438,10 @@
                     <button class="btn">Fetch Status</button>
                 </div>
 
-                <div class="jobSummary">
+                <div class="jobSummary" id="controlsProcessed">
                     <p><strong>Controls Processed:</strong> 3 of 12</p>
                     <div class="progressBar">
-                        <div class="progressBarFill" style="width: 25%"></div>
+                        <div class="progressBarFill" style="--progress-width: 25%"></div>
                     </div>
                     <div class="progressPercentage">25%</div>
                 </div>
@@ -498,5 +490,20 @@
             </div>
         </div>
     </div>
+
+    <script>
+        function toggleControls() {
+            const controlsElement = document.getElementById('controlsProcessed');
+            const button = document.querySelector('button[onclick="toggleControls()"]');
+            
+            if (controlsElement.style.display === 'none') {
+                controlsElement.style.display = 'block';
+                button.textContent = 'Hide Controls Processed';
+            } else {
+                controlsElement.style.display = 'none';
+                button.textContent = 'Show Controls Processed';
+            }
+        }
+    </script>
 </body>
 </html>

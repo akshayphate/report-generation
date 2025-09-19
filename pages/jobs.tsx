@@ -334,7 +334,7 @@ const JobsPage: React.FC = () => {
                     : "Fetch Status"}
                 </Button>
 
-                {job.status === "Processing" && (
+                {job.status === "Processing" && job.progress && (
                   <Button
                     onClick={() => toggleJobCardControls(job.UUID)}
                     themeColor={"secondary"}

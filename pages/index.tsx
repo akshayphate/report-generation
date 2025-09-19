@@ -49,13 +49,6 @@ export default function Home() {
               <p>Submit a ZIP file for comprehensive vendor assessment.</p>
             </div>
 
-            <div
-              className={styles.optionCard}
-              onClick={() => navigateTo('/jobs')}
-            >
-              <h2>My Assessment Jobs</h2>
-              <p>Track and view your submitted assessment jobs.</p>
-            </div>
 
             <div
               className={styles.optionCard}

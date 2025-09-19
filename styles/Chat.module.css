@@ -1,4 +1,3 @@
-
 .container {
   display: flex;
   justify-content: center;
@@ -6,6 +5,8 @@
   width: 100%;
   font-family: 'Inter', system-ui, sans-serif;
 }
+
+
 
 
 .chatContainer {
@@ -24,6 +25,8 @@
 }
 
 
+
+
 .messagesContainer {
   flex: 1;
   overflow-y: auto;
@@ -36,6 +39,8 @@
 }
 
 
+
+
 .messageWrapper {
   display: flex;
   flex-direction: column;
@@ -43,11 +48,15 @@
 }
 
 
+
+
 .tableMessageWrapper {
   display: flex;
   flex-direction: column;
   max-width: 1000%;;
 }
+
+
 
 
 .user {
@@ -60,6 +69,8 @@
 }
 
 
+
+
 .bot {
   align-self: flex-start;
   background-color: var(--wf-light-grey);
@@ -70,6 +81,8 @@
 }
 
 
+
+
 .messageContent {
   word-wrap: break-word;
   font-weight: 500;
@@ -77,9 +90,13 @@
 }
 
 
+
+
 .fileList {
   margin-top: 8px;
 }
+
+
 
 
 .fileItem {
@@ -94,9 +111,13 @@
 }
 
 
+
+
 .fileIcon {
   font-size: 14px;
 }
+
+
 
 
 .fileName {
@@ -104,6 +125,8 @@
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+
+
 
 
 .processingMessage {
@@ -115,15 +138,21 @@
 }
 
 
+
+
 .inputContainer {
   padding-top: 16px;
 }
+
+
 
 
 .inputForm {
   display: flex;
   gap: 10px;
 }
+
+
 
 
 .input {
@@ -133,6 +162,8 @@
   border: 1px solid #ccc;
   font-size: 14px;
 }
+
+
 
 
 /* Primary Send in Wells Fargo red */
@@ -156,11 +187,16 @@
 }
 
 
+
+
+
 .uploadSection {
   display: flex;
   justify-content: flex-start;
   padding: 10px 0;
 }
+
+
 
 
 /* Upload in WF red (no gold) */
@@ -178,10 +214,14 @@
 }
 
 
+
+
 .uploadIcon,
 .loadingIcon {
   font-size: 16px;
 }
+
+
 
 
 .dropdownSection {
@@ -193,6 +233,8 @@
 }
 
 
+
+
 .checkboxList {
   display: flex;
   flex-direction: column;
@@ -201,6 +243,8 @@
   overflow-y: auto;
   margin: 0 1rem 0 0;
 }
+
+
 
 
 .checkboxItem {
@@ -233,6 +277,8 @@
 }
 
 
+
+
 /* Submit also in red */
 .submitButton {
   background: var(--wf-red);
@@ -248,6 +294,8 @@
 }
 
 
+
+
 /* Export CSV in red */
 .exportButtonTop {
   background: var(--wf-red);
@@ -259,15 +307,13 @@
 }
 
 
+
+
 /* Table styling */
 .resultTable {
   width: 100%;
   table-layout: fixed;
   border-collapse: collapse;
-  margin-top: 12px;
-  margin: 0;
-
-
   border: 2px solid var(--wf-red);
   border-radius: 8px;
   overflow: hidden;
@@ -295,16 +341,22 @@
 }
 
 
+
+
 .resultTable th:nth-child(2),
 .resultTable th:nth-child(2) {width: 10%;}
 .resultTable th:nth-child(3),
 .resultTable th:nth-child(3) {width: 15%;}
 
 
+
+
 /* Alternate row shading */
 .resultTable tbody tr:nth-child(odd) {
   background-color: var(--wf-light-grey);
 }
+
+
 
 
 .adequateCell {
@@ -316,6 +368,8 @@
   background: #d4edda;
   color: #155724
 }
+
+
 
 
 .inadequateCell {
@@ -336,6 +390,10 @@
   background: #FFC107;
   color: #212529
 }
+
+
+
+
 
 
 
@@ -362,6 +420,8 @@
 }
 
 
+
+
 /* Reset button (if used) */
 .resetButton {
   color: var(--wf-red);
@@ -370,9 +430,9 @@
   color: var(--wf-dark-red);
 }
 
+
 /* Hidden file input */
 .hiddenFileInput {
   display: none;
 }
-
 

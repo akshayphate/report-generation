@@ -1,7 +1,7 @@
-
 /* eslint-disable react/destructuring-assignment */
 /* eslint-disable camelcase */
 import { NextApiRequest, NextApiResponse } from 'next';
+import { logger } from '@ctip/toolkit';
 import axios, { AxiosRequestConfig } from 'axios';
 import https from 'https';
 
@@ -51,7 +51,7 @@ const getBearerToken = async (req: NextApiRequest, res: NextApiResponse) => {
 
     res.status(200).json(apigee_access_token);
   } catch (error) {
-    console.log("Results API Failure", results_list);
+    logger.error({ message: `Error: ${error}`, error });
     res.status(500).send('Server error.');
   }
 };

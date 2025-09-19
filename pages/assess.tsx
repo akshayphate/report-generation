@@ -4,18 +4,16 @@
 * @author Akshay Phate
 * @created July 26, 2025
 */
-import React, { useState } from "react"
+import React, { useState, useContext } from "react"
 import styles from "../styles/assesment.module.css";
 import { Upload } from "@progress/kendo-react-upload";
 import { Button } from "@progress/kendo-react-buttons";
+import { AppContext } from '@ctip/cip-framework-client';
+import { useRouter } from "next/router";
 import "@progress/kendo-theme-default/dist/all.css";
+import { validateZipStructureNew } from "../services/ZipfileProcessor";
+import JSZip from "jszip";
 
-// Mock user context - replace with actual context when available
-const mockUser = {
-  firstName: 'John',
-  lastName: 'Doe',
-  userName: 'john.doe@example.com'
-};
 
 const FullVendorAnalysis: React.FC = () => {
     const [currentZipFile, setCurrentZipFile] = useState<File | null>(null);
@@ -24,8 +22,14 @@ const FullVendorAnalysis: React.FC = () => {
     const [error, setError] = useState<string | null>(null);
     const [success, setSuccess] = useState<string | null>(null);
     const [uploadConfirmation, setUploadConfirmation] = useState<string | null>(null);
+    const user = useContext(AppContext);
+    const username = user?.user?.username;
+    const firstName = user?.user?.firstName;
+    const lastName = user?.user?.lastName;
+    const router = useRouter();
 
-    const handleUploadSuccess = (event: any) => {
+
+    const handleUploadSuccess = async (event: any) => {
         const files = event.affectedFiles || [];
         if (files.length === 0) {
             setZipUploaded(false);
@@ -33,6 +37,7 @@ const FullVendorAnalysis: React.FC = () => {
             setUploadConfirmation(null);
             return;
         }
+
 
         const zipFile = files[0].getRawFile();
         if (!zipFile) {
@@ -42,6 +47,7 @@ const FullVendorAnalysis: React.FC = () => {
             return;
         }
 
+
         if (!zipFile.name.toLowerCase().endsWith('.zip')) {
             setZipUploaded(false);
             setCurrentZipFile(null);
@@ -50,19 +56,38 @@ const FullVendorAnalysis: React.FC = () => {
             return;
         }
 
-        setCurrentZipFile(zipFile);
-        setZipUploaded(true);
-        setError(null);
-        setSuccess(null);
-        setUploadConfirmation(`✅ File "${zipFile.name}" uploaded successfully!`);
+
+        // Validate ZIP structure using validateZipStructureNew
+        try {
+            const validationResult = await validateZipStructureNew(zipFile);
+            if (!validationResult.isValid) {
+                setError(`ZIP validation failed: ${validationResult.message}`);
+                setZipUploaded(false);
+                setUploadConfirmation(null);
+                return;
+            }
+
+
+            setCurrentZipFile(zipFile);
+            setZipUploaded(true);
+            setError(null);
+            setUploadConfirmation(`✅ ${validationResult.message}`);
+        } catch (err) {
+            setError("ZIP validation failed. The file may be corrupted or invalid.");
+            setZipUploaded(false);
+            setUploadConfirmation(null);
+        }
     };
+
 
     const handleSubmitJob = async () => {
         if (!currentZipFile) return;
 
+
         setLoading(true);
         setError(null);
         setSuccess(null);
+
 
         try {
             // Convert file to base64
@@ -72,26 +97,31 @@ const FullVendorAnalysis: React.FC = () => {
                 reader.onerror = reject;
                 reader.readAsDataURL(currentZipFile);
             });
+            const baseURL = typeof window !== 'undefined' ? `${window.location.protocol}//${window.location.host}` : '';
+            const appURL = baseURL.includes('localhost') || baseURL.includes('clvrw99a1065') ? '' : '/tprss';
+
 
             // Submit job to backend
-            const response = await fetch('/api/processZip', {
+            const response = await fetch(`${appURL}/api/processZip`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
-                    userId: mockUser.userName,
-                    userName: `${mockUser.firstName} ${mockUser.lastName}`,
+                    userId: username,
+                    userName: `${firstName} ${lastName}`,
                     zipFile: base64,
                     zipFileName: currentZipFile.name,
                     zipFileSize: currentZipFile.size
                 }),
             });
 
+
             if (!response.ok) {
                 const errorData = await response.json();
                 throw new Error(errorData.error || 'Failed to submit job');
             }
+
 
             const result = await response.json();
             setSuccess(`Job submitted successfully! Job ID: ${result.jobUUID}`);
@@ -101,6 +131,7 @@ const FullVendorAnalysis: React.FC = () => {
             setCurrentZipFile(null);
             setZipUploaded(false);
 
+
         } catch (err) {
             console.error('Error submitting job:', err);
             setError(err instanceof Error ? err.message : 'Failed to submit job');
@@ -108,6 +139,7 @@ const FullVendorAnalysis: React.FC = () => {
             setLoading(false);
         }
     };
+
 
     const startOver = () => {
         setZipUploaded(false);
@@ -118,9 +150,6 @@ const FullVendorAnalysis: React.FC = () => {
         setCurrentZipFile(null);
     };
 
-    const navigateToJobs = () => {
-        window.location.href = '/jobs';
-    };
 
     return (
         <div className={`${styles.root} ${styles.container}`}>
@@ -141,6 +170,7 @@ const FullVendorAnalysis: React.FC = () => {
                         </ol>
                     </div>
 
+
                     <div className={styles.uploadSection}>
                         <Upload
                             restrictions={{
@@ -154,17 +184,20 @@ const FullVendorAnalysis: React.FC = () => {
                         />
                     </div>
 
+
                     {error && (
                         <div className={styles.alertDanger} role="alert">
                             {error}
                         </div>
                     )}
 
+
                     {uploadConfirmation && (
                         <div className={styles.uploadConfirmation} role="alert">
                             {uploadConfirmation}
                         </div>
                     )}
+
 
                     <div className={styles.actionButtons}>
                         <Button
@@ -195,7 +228,7 @@ const FullVendorAnalysis: React.FC = () => {
                     
                     <div className={styles.actionButtons}>
                         <Button
-                            onClick={navigateToJobs}
+                            onClick={() => router.push("/jobs")}
                             themeColor={'primary'}
                         >
                             View My Jobs
@@ -213,5 +246,6 @@ const FullVendorAnalysis: React.FC = () => {
         </div>
     );
 };
+
 
 export default FullVendorAnalysis;

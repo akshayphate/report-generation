@@ -1,14 +1,7 @@
-/**
- * @file ProgressDisplay.tsx
- * @description 
- * @author Damodar Perumalla
- * @created July 22, 2025
- */
-
-
 import React from 'react';
 import { ProcessingProgress } from '../services/evidenceService';
 import styles from '../styles/assesment.module.css';
+
 
 interface ProgressDisplayProps {
     progress: ProcessingProgress;
@@ -16,12 +9,15 @@ interface ProgressDisplayProps {
     elapsedTime?: number;
 }
 
+
 const ProgressDisplay: React.FC<ProgressDisplayProps> = ({ progress, isVisible, elapsedTime = 0 }) => {
     if (!isVisible) return null;
+
 
     const percentage = progress.totalControls > 0 
         ? Math.round((progress.completedControls / progress.totalControls) * 100) 
         : 0;
+
 
     // Format elapsed time
     const formatTime = (ms: number) => {
@@ -30,6 +26,7 @@ const ProgressDisplay: React.FC<ProgressDisplayProps> = ({ progress, isVisible, 
         const remainingSeconds = seconds % 60;
         return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
     };
+
 
     return (
         <div className={styles.progressContainer}>
@@ -47,6 +44,7 @@ const ProgressDisplay: React.FC<ProgressDisplayProps> = ({ progress, isVisible, 
                     )}
                 </div>
 
+
                 {/* Enhanced Progress Bar */}
                 <div className={styles.progressBar}>
                     <div 
@@ -57,9 +55,11 @@ const ProgressDisplay: React.FC<ProgressDisplayProps> = ({ progress, isVisible, 
                     />
                 </div>
 
+
                 <div className={styles.progressPercentage}>
                     {progress.completedControls} of {progress.totalControls} controls processed ({percentage}%)
                 </div>
+
 
                 {/* Stopwatch */}
                 {elapsedTime > 0 && (
@@ -67,6 +67,7 @@ const ProgressDisplay: React.FC<ProgressDisplayProps> = ({ progress, isVisible, 
                         ⏱️ Elapsed Time: {formatTime(elapsedTime)}
                     </div>
                 )}
+
 
                 <div className={styles.progressDetails}>
                     <div className={styles.progressDetailItem}>
@@ -105,5 +106,6 @@ const ProgressDisplay: React.FC<ProgressDisplayProps> = ({ progress, isVisible, 
         </div>
     );
 };
+
 
 export default ProgressDisplay;

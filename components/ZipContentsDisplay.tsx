@@ -6,9 +6,11 @@
 * @updated July 27, 2025 - Added better file size formatting and UI improvements
 */
 
+
 import React, { Component } from 'react';
 import styles from '../styles/assesment.module.css';
 import { WarningModal } from './WarningModal';
+
 
 interface FileContent {
     fileName: string;
@@ -18,10 +20,12 @@ interface FileContent {
     size?: number;
 }
 
+
 interface ProcessedFolder {
     name: string;
     contents: FileContent[];
 }
+
 
 interface ZipContentsDisplayProps {
     folders: ProcessedFolder[];
@@ -30,13 +34,16 @@ interface ZipContentsDisplayProps {
     questionnaireFile: { name: string; type?: string; size?: number } | null;
 }
 
+
 interface FolderRowProps {
     folder: ProcessedFolder;
 }
 
+
 interface FolderRowState {
     isOpen: boolean;
 }
+
 
 class FolderRow extends Component<FolderRowProps, FolderRowState> {
     constructor(props: FolderRowProps) {
@@ -45,6 +52,7 @@ class FolderRow extends Component<FolderRowProps, FolderRowState> {
             isOpen: false
         };
     }
+
 
     formatFileSize = (bytes?: number, forceKB: boolean = false): string => {
         if (!bytes) return 'N/A';
@@ -60,13 +68,16 @@ class FolderRow extends Component<FolderRowProps, FolderRowState> {
         }
     };
 
+
     toggleOpen = () => {
         this.setState(prevState => ({ isOpen: !prevState.isOpen }));
     };
 
+
     render() {
         const { folder } = this.props;
         const { isOpen } = this.state;
+
 
         return (
             <React.Fragment>
@@ -93,14 +104,17 @@ class FolderRow extends Component<FolderRowProps, FolderRowState> {
     }
 }
 
+
 interface ZipContentsDisplayState {
     showWarning: boolean;
     largeFiles: Array<{ name: string; size: number }>;
     showContents: boolean;
 }
 
+
 export class ZipContentsDisplay extends Component<ZipContentsDisplayProps, ZipContentsDisplayState> {
     private readonly MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB in bytes
+
 
     constructor(props: ZipContentsDisplayProps) {
         super(props);
@@ -111,6 +125,7 @@ export class ZipContentsDisplay extends Component<ZipContentsDisplayProps, ZipCo
         };
     }
 
+
     componentDidMount() {
         this.checkLargeFiles();
         // Auto-show contents after a short delay for better UX
@@ -119,11 +134,13 @@ export class ZipContentsDisplay extends Component<ZipContentsDisplayProps, ZipCo
         }, 50);
     }
 
+
     componentDidUpdate(prevProps: ZipContentsDisplayProps) {
         if (prevProps.folders !== this.props.folders) {
             this.checkLargeFiles();
         }
     }
+
 
     formatFileSize = (bytes?: number, forceKB: boolean = false): string => {
         if (!bytes) return 'N/A';
@@ -139,6 +156,7 @@ export class ZipContentsDisplay extends Component<ZipContentsDisplayProps, ZipCo
         }
     };
 
+
     checkLargeFiles = () => {
         const oversizedFiles = this.props.folders.flatMap(folder =>
             folder.contents
@@ -149,7 +167,7 @@ export class ZipContentsDisplay extends Component<ZipContentsDisplayProps, ZipCo
                 }))
         );
 
-        console.log('Large files found:', oversizedFiles);
+
         if (oversizedFiles.length > 0) {
             this.setState({
                 largeFiles: oversizedFiles,
@@ -158,18 +176,22 @@ export class ZipContentsDisplay extends Component<ZipContentsDisplayProps, ZipCo
         }
     };
 
+
     handleProceed = () => {
         this.setState({ showWarning: false });
         this.props.onProceed();
     };
 
+
     handleWarningClose = () => {
         this.setState({ showWarning: false });
     };
 
+
     render() {
         const { folders, onClose, questionnaireFile } = this.props;
         const { showWarning, largeFiles, showContents } = this.state;
+
 
         return (
             <div className={`${styles['zip-contents-backdrop']} ${showContents ? styles.show : ''}`}>
@@ -196,6 +218,7 @@ export class ZipContentsDisplay extends Component<ZipContentsDisplayProps, ZipCo
                         </div>
                     </div>
 
+
                     {questionnaireFile && (
                         <div className={styles['questionnaire-section']}>
                             <h4>Questionnaire File</h4>
@@ -214,6 +237,7 @@ export class ZipContentsDisplay extends Component<ZipContentsDisplayProps, ZipCo
                             </div>
                         </div>
                     )}
+
 
                     <div className={styles['contents-section']}>
                         <h4>Evidence Files</h4>
@@ -241,6 +265,7 @@ export class ZipContentsDisplay extends Component<ZipContentsDisplayProps, ZipCo
                         )}
                     </div>
 
+
                     {/* <div className={styles['zip-contents-footer']}>
                         <button 
                             className={styles['proceed-btn']}
@@ -250,6 +275,7 @@ export class ZipContentsDisplay extends Component<ZipContentsDisplayProps, ZipCo
                             Process Files
                         </button>
                     </div> */}
+
 
                     {showWarning && (
                         <WarningModal
@@ -264,5 +290,6 @@ export class ZipContentsDisplay extends Component<ZipContentsDisplayProps, ZipCo
         );
     }
 }
+
 
 export default ZipContentsDisplay;

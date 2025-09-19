@@ -3,6 +3,8 @@
    =============================================== */
 
 
+
+
 /* 1. ROOT & COLOR DEFINITIONS */
 /* Changed from :root for CTIP framework compatibility */
 .root {
@@ -16,16 +18,21 @@
     --wf-light-gray: #f1f1f1;
 
 
+
+
     --success-green: #28a745;
     --info-blue: #007bff;
     /* A neutral blue for info, can be adjusted */
     --warning-orange: #ffc107;
 
 
+
+
     --shadow-sm: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
     --shadow-md: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
     --border-radius: 0.375rem;
 }
+
 
 /* Job Tracking Styles */
 .loadingContainer {
@@ -35,15 +42,18 @@
     min-height: 200px;
 }
 
+
 .header {
     text-align: center;
     margin-bottom: 2rem;
 }
 
+
 .header h1 {
     color: var(--wf-red);
     margin-bottom: 0.5rem;
 }
+
 
 .emptyState {
     text-align: center;
@@ -53,11 +63,13 @@
     box-shadow: var(--shadow-sm);
 }
 
+
 .jobsList {
     display: flex;
     flex-direction: column;
     gap: 1rem;
 }
+
 
 .jobCard {
     background: var(--wf-white);
@@ -68,9 +80,11 @@
     transition: box-shadow 0.2s ease;
 }
 
+
 .jobCard:hover {
     box-shadow: var(--shadow-md);
 }
+
 
 .jobHeader {
     display: flex;
@@ -79,10 +93,12 @@
     margin-bottom: 1rem;
 }
 
+
 .jobInfo h3 {
     margin: 0 0 0.5rem 0;
     color: var(--wf-text);
 }
+
 
 .jobUUID {
     font-family: monospace;
@@ -91,16 +107,19 @@
     margin: 0.25rem 0;
 }
 
+
 .jobDate, .jobSize {
     font-size: 0.875rem;
     color: #666;
     margin: 0.25rem 0;
 }
 
+
 .jobStatus {
     display: flex;
     align-items: center;
 }
+
 
 .statusBadge {
     padding: 0.25rem 0.75rem;
@@ -111,25 +130,30 @@
     letter-spacing: 0.025em;
 }
 
+
 .statusPending {
     background-color: #e3f2fd;
     color: #1976d2;
 }
+
 
 .statusProcessing {
     background-color: #fff3e0;
     color: #f57c00;
 }
 
+
 .statusCompleted {
     background-color: #e8f5e8;
     color: var(--success-green);
 }
 
+
 .statusFailed {
     background-color: #ffebee;
     color: #d32f2f;
 }
+
 
 .jobActions {
     display: flex;
@@ -138,6 +162,7 @@
     margin-bottom: 1rem;
 }
 
+
 .jobSummary {
     background: var(--wf-light-gray);
     padding: 1rem;
@@ -145,10 +170,13 @@
     margin-top: 1rem;
 }
 
+
 .jobSummary p {
     margin: 0.25rem 0;
     font-size: 0.875rem;
 }
+
+
 
 .errorMessage {
     background: #ffebee;
@@ -159,6 +187,7 @@
     font-size: 0.875rem;
 }
 
+
 .reportHeader {
     text-align: center;
     margin-bottom: 2rem;
@@ -168,10 +197,12 @@
     box-shadow: var(--shadow-sm);
 }
 
+
 .reportHeader h2 {
     color: var(--wf-red);
     margin-bottom: 0.5rem;
 }
+
 
 .reportHeader p {
     margin: 0.25rem 0;
@@ -179,10 +210,12 @@
     font-size: 0.875rem;
 }
 
+
 .successContainer {
     text-align: center;
     padding: 2rem;
 }
+
 
 .successMessage {
     background: var(--wf-white);
@@ -193,15 +226,19 @@
     box-shadow: var(--shadow-sm);
 }
 
+
 .successMessage h2 {
     color: var(--success-green);
     margin-bottom: 1rem;
 }
 
+
 .successMessage p {
     margin: 0.5rem 0;
     color: var(--wf-text);
 }
+
+
 
 
 /* 2. GENERAL & LAYOUT STYLES */
@@ -217,6 +254,8 @@
 }
 
 
+
+
 .pageTitle {
     font-size: 2.5rem;
     color: #000000;
@@ -226,6 +265,8 @@
 }
 
 
+
+
 .sectionHeading {
     font-size: 1.2rem;
     color: var(--wf-text-secondary);
@@ -233,6 +274,8 @@
     margin-top: 0.5rem;
     margin-bottom: 2rem;
 }
+
+
 
 
 /* Instructions Section */
@@ -246,6 +289,8 @@
 }
 
 
+
+
 .instructionsTitle {
     font-size: 1.5rem;
     color: #000000;
@@ -257,11 +302,15 @@
 }
 
 
+
+
 .instructionsList {
     list-style-position: inside;
     padding-left: 0;
     margin-bottom: 1rem;
 }
+
+
 
 
 .instructionsList li {
@@ -270,12 +319,16 @@
 }
 
 
+
+
 .instructionsEmphasis {
     background-color: #fff3cd;
     border-left: 4px solid #fccc44;
     padding: 1rem;
     font-style: italic;
 }
+
+
 
 
 /* 3. UPLOAD SECTION */
@@ -289,6 +342,8 @@
 }
 
 
+
+
 .uploadIcon {
     font-size: 3rem;
     color: var(--wf-red);
@@ -296,11 +351,15 @@
 }
 
 
+
+
 .uploadText {
     font-size: 1.2rem;
     font-weight: 500;
     color: var(--wf-text);
 }
+
+
 
 
 .uploadHint {
@@ -316,8 +375,10 @@
     justify-content: center;
     gap: 1.5rem;
     margin-bottom: 2rem;
-    background-color: #fcf8e3;
+    /* background-color: #fcf8e3; */
 }
+
+
 
 
 .alertDanger {
@@ -329,6 +390,7 @@
     text-align: center;
     margin-bottom: 2rem;
 }
+
 
 .uploadConfirmation {
     background: linear-gradient(135deg, #d4edda, #c3e6cb);
@@ -347,6 +409,8 @@
 }
 
 
+
+
 /* 5. REPORT & CONTENT DISPLAY */
 .results-container {
     background-color: var(--wf-white);
@@ -362,6 +426,7 @@
     align-items: center;
 }
 
+
 .results-header {
     display: flex;
     justify-content: space-between;
@@ -374,12 +439,14 @@
     gap: 1rem;
 }
 
+
 .results-header h2 {
     margin: 0;
     color: var(--wf-red);
     font-size: 1.8rem;
     font-weight: bold;
 }
+
 
 .total-time {
     background: linear-gradient(135deg, var(--wf-red), var(--wf-gold));
@@ -395,6 +462,8 @@
 }
 
 
+
+
 /* New Card View styles */
 .cards-view-container {
     display: grid;
@@ -403,6 +472,7 @@
     width: 100%;
     max-width: 100%;
 }
+
 
 /* Responsive grid adjustments */
 @media (max-width: 768px) {
@@ -422,6 +492,7 @@
     }
 }
 
+
 @media (max-width: 480px) {
     .results-container {
         padding: 1rem;
@@ -434,6 +505,8 @@
 }
 
 
+
+
 .report-card {
     background-color: var(--wf-white);
     border: 1px solid var(--wf-border-color);
@@ -443,10 +516,14 @@
 }
 
 
+
+
 .report-card:hover {
     transform: translateY(-4px);
     box-shadow: 0 8px 16px rgba(0, 0, 0, 0.12);
 }
+
+
 
 
 .report-card-content {
@@ -458,6 +535,8 @@
 }
 
 
+
+
 .report-field {
     display: flex;
     flex-direction: column;
@@ -467,11 +546,12 @@
 }
 
 
+
+
 .report-field:last-child {
     border-bottom: none;
     padding-bottom: 0;
 }
-
 
 .field-label {
     font-weight: 600;
@@ -481,10 +561,13 @@
     letter-spacing: 0.5px;
 }
 
+
 .field-value {
     color: #343a40;
     font-size: 1rem;
 }
+
+
 
 
 .field-value.question {
@@ -493,12 +576,16 @@
 }
 
 
+
+
 /* Updated Table styles for better responsive behavior */
 .table-container {
     width: 100%;
     margin-top: 12px;
     /* Remove overflow-x to prevent horizontal scrolling */
 }
+
+
 
 
 .assessment-table {
@@ -510,6 +597,8 @@
     border-radius: 8px;
     table-layout: fixed; /* Fix layout to respect column widths */
 }
+
+
 
 
 .assessment-table thead th {
@@ -529,6 +618,8 @@
 }
 
 
+
+
 .assessment-table th,
 .assessment-table td {
     border: 1px solid #ccc;
@@ -541,35 +632,51 @@
 }
 
 
+
+
 /* Adjust column widths to fit content better */
 .assessment-table th:nth-child(1) {width: 17%;}
 .assessment-table td:nth-child(1) {width: 17%; text-align: left;} /* Control column */
+
+
 
 
 .assessment-table th:nth-child(2) {width: 9%;}
 .assessment-table td:nth-child(2) {width: 9%; text-align: center;} /* Answer column */
 
 
+
+
 .assessment-table th:nth-child(3) {width: 12%;}
 .assessment-table td:nth-child(3) {width: 12%; text-align: center;} /* Answer Quality column */
+
+
 
 
 .assessment-table th:nth-child(4) {width: 30%;}
 .assessment-table td:nth-child(4) {width: 30%; text-align: left;} /* Answer Source column */
 
 
+
+
 .assessment-table th:nth-child(5) {width: 22%;}
 .assessment-table td:nth-child(5) {width: 22%; text-align: left;} /* Summary column */
+
+
 
 
 .assessment-table th:nth-child(6) {width: 15%;}
 .assessment-table td:nth-child(6) {width: 15%; text-align: left;} /* Reference column */
 
 
+
+
 /* Alternate row shading */
 .assessment-table tbody tr:nth-child(odd) {
     background-color: var(--wf-light-gray);
 }
+
+
 
 
 /* Quality and Answer styling with badges - centered in their cells */
@@ -587,6 +694,8 @@
 }
 
 
+
+
 .answer-no {
     display: inline-block;
     padding: 4px 8px;
@@ -600,6 +709,8 @@
 }
 
 
+
+
 .answer-n\/a {
     display: inline-block;
     padding: 4px 8px;
@@ -611,6 +722,8 @@
     margin: 0 auto;
     white-space: nowrap;
 }
+
+
 
 
 /* Answer Quality styling - with background color */
@@ -627,7 +740,6 @@
     white-space: nowrap;
 }
 
-
 .quality-inadequate {
     display: inline-block;
     padding: 4px 8px;
@@ -640,6 +752,8 @@
     margin: 0 auto;
     white-space: nowrap;
 }
+
+
 
 
 .quality-needs_review {
@@ -656,7 +770,11 @@
 }
 
 
+
+
 /* 6. QUALITY & STATUS STYLES */
+
+
 
 
 /* These old styles are now replaced by the badge styling above */
@@ -668,11 +786,15 @@
 }
 
 
+
+
 .quality-inadequate,
 .answer-no {
   color: var(--wf-red);
   font-weight: bold;
 }
+
+
 
 
 .quality-needs_review,
@@ -683,10 +805,14 @@
 }
 
 
+
+
 .answer-n\/a {
   color: #6c757d;
 }
 */
+
+
 
 
 /* Keep special styling for card view */
@@ -697,6 +823,8 @@
   background: none;
   padding: 0;
 }
+
+
 
 
 .report-card .quality-inadequate,
@@ -716,6 +844,8 @@
 }
 
 
+
+
 /* 7. ZIP CONTENTS DISPLAY */
 .zip-contents-backdrop {
     position: fixed;
@@ -731,6 +861,8 @@
 }
 
 
+
+
 .zip-contents-modal {
     background-color: white;
     border-radius: 8px;
@@ -742,6 +874,8 @@
     position: relative;
     z-index: 1001;
 }
+
+
 
 
 /* Add styles for the warning modal */
@@ -762,6 +896,8 @@
 }
 
 
+
+
 .warning-modal {
     background-color: white;
     border-radius: 12px;
@@ -776,6 +912,7 @@
     /* Higher than warning backdrop */
 }
 
+
 @keyframes modalSlideIn {
     from {
         opacity: 0;
@@ -788,6 +925,9 @@
 }
 
 
+
+
+
 .warning-modal-header {
     display: flex;
     justify-content: center;
@@ -795,6 +935,7 @@
     margin-bottom: 25px;
     text-align: center;
 }
+
 
 .warning-modal-header h2 {
     margin: 0;
@@ -804,10 +945,13 @@
 }
 
 
+
+
 .warning-modal-content {
     margin-bottom: 25px;
     text-align: center;
 }
+
 
 .warning-modal-content p {
     margin: 0 0 12px 0;
@@ -816,11 +960,14 @@
     color: #333;
 }
 
+
 .warning-modal-content p:last-child {
     margin-bottom: 0;
     font-weight: 500;
     color: #666;
 }
+
+
 
 
 .warning-modal-actions {
@@ -829,6 +976,7 @@
     gap: 15px;
     flex-wrap: wrap;
 }
+
 
 .warning-modal-button-primary {
     background-color: #d32f2f;
@@ -843,11 +991,13 @@
     min-width: 120px;
 }
 
+
 .warning-modal-button-primary:hover {
     background-color: #b71c1c;
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(211, 47, 47, 0.3);
 }
+
 
 .warning-modal-button {
     background-color: #f5f5f5;
@@ -862,17 +1012,20 @@
     min-width: 120px;
 }
 
+
 .warning-modal-button:hover {
     background-color: #e0e0e0;
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
+
 .countdown-indicator {
     display: flex;
     justify-content: center;
     margin-bottom: 20px;
 }
+
 
 .countdown-circle {
     width: 80px;
@@ -886,12 +1039,14 @@
     animation: pulse 2s infinite;
 }
 
+
 .countdown-number {
     color: white;
     font-size: 1.8rem;
     font-weight: bold;
     text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
+
 
 @keyframes pulse {
     0% {
@@ -909,6 +1064,8 @@
 }
 
 
+
+
 .zip-contents-header {
     display: flex;
     justify-content: space-between;
@@ -919,10 +1076,14 @@
 }
 
 
+
+
 .zip-contents-header h2 {
     color: var(--wf-red);
     margin: 0;
 }
+
+
 
 
 .folder-list {
@@ -931,9 +1092,13 @@
 }
 
 
+
+
 .folder-item {
     margin-bottom: 1rem;
 }
+
+
 
 
 .folder-header {
@@ -945,6 +1110,8 @@
 }
 
 
+
+
 .file-list {
     list-style: none;
     padding-left: 1.5rem;
@@ -952,9 +1119,14 @@
 }
 
 
+
+
+
 .file-item {
     padding: 0.25rem 0;
 }
+
+
 
 
 /* Styles for new Zip Contents table view */
@@ -962,6 +1134,8 @@
     width: 100%;
     border-collapse: collapse;
 }
+
+
 
 
 .zip-contents-table th,
@@ -972,9 +1146,13 @@
 }
 
 
+
+
 .zip-contents-table tr:last-child td {
     border-bottom: none;
 }
+
+
 
 
 .zip-folder-row {
@@ -984,9 +1162,13 @@
 }
 
 
+
+
 .zip-folder-row:hover {
     background-color: #e9ecef;
 }
+
+
 
 
 .zip-file-row td {
@@ -994,10 +1176,14 @@
 }
 
 
+
+
 .zip-file-icon,
 .zip-folder-icon {
     margin-right: 0.75rem;
 }
+
+
 
 
 /* Questionnaire section styles */
@@ -1010,6 +1196,8 @@
 }
 
 
+
+
 .questionnaire-section h4 {
     margin: 0 0 0.5rem 0;
     color: var(--success-green);
@@ -1017,11 +1205,15 @@
 }
 
 
+
+
 .zip-file-row-item {
     display: flex;
     align-items: center;
     padding: 0.5rem 0;
 }
+
+
 
 
 /* New style for loading message */
@@ -1038,15 +1230,21 @@
 }
 
 
+
+
 .amberHighlight {
   background-color: rgba(255, 191, 0, 0.15);
   border-left: 4px solid #FFBF00;
 }
 
 
+
+
 .report-card.amberHighlight {
   border-left: 4px solid #FFBF00;
 }
+
+
 
 
 .designElement {
@@ -1102,7 +1300,188 @@
     text-align: center;
   }
   
+
+
+
+
+.file-item {
+    padding: 0.25rem 0;
+}
+
+
+
+
+/* Styles for new Zip Contents table view */
+.zip-contents-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+
+
+
+.zip-contents-table th,
+.zip-contents-table td {
+    padding: 0.75rem 1rem;
+    text-align: left;
+    border-bottom: 1px solid var(--wf-border-color);
+}
+
+
+
+
+.zip-contents-table tr:last-child td {
+    border-bottom: none;
+}
+
+
+
+
+.zip-folder-row {
+    cursor: pointer;
+    background-color: var(--wf-light-gray);
+    font-weight: bold;
+}
+
+
+
+
+.zip-folder-row:hover {
+    background-color: #e9ecef;
+}
+
+
+
+
+.zip-file-row td {
+    padding-left: 3rem !important;
+}
+
+
+
+
+.zip-file-icon,
+.zip-folder-icon {
+    margin-right: 0.75rem;
+}
+
+
+
+
+/* Questionnaire section styles */
+.questionnaire-section {
+    margin-bottom: 1.5rem;
+    padding: 1rem;
+    background-color: var(--wf-light-gray);
+    border-radius: var(--border-radius);
+    border-left: 4px solid var(--success-green);
+}
+
+
+
+
+.questionnaire-section h4 {
+    margin: 0 0 0.5rem 0;
+    color: var(--success-green);
+    font-weight: 600;
+}
+
+
+
+
+.zip-file-row-item {
+    display: flex;
+    align-items: center;
+    padding: 0.5rem 0;
+}
+
+
+
+
+/* New style for loading message */
+.processingMessage {
+    text-align: center;
+    padding: 2rem;
+    font-size: 1.25rem;
+    color: var(--wf-text);
+    font-style: italic;
+    background-color: var(--wf-white);
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-sm);
+    margin-bottom: 2rem;
+}
+
+
+
+
+.amberHighlight {
+  background-color: rgba(255, 191, 0, 0.15);
+  border-left: 4px solid #FFBF00;
+}
+
+
+
+
+.report-card.amberHighlight {
+  border-left: 4px solid #FFBF00;
+}
+
+
+
+
+.designElement {
+    font-weight: 500;
+    color: #333;
+  }
   
+  
+  .reviewNote {
+    font-size: 0.85rem;
+    font-style: italic;
+    color: #996600;
+    margin-left: 5px;
+  }
+  
+  
+  .legendNote {
+    margin-top: 10px;
+    font-size: 0.9rem;
+    color: #996600;
+    font-style: italic;
+  }
+  
+  
+  .quality-needs_review {
+    color: #996600 !important;
+    font-weight: 600;
+  }
+  
+  
+  .mainQuestion {
+      font-weight: 600;
+      color: var(--wf-heading);
+  }
+  
+  
+  /* Progress bar styles */
+  .progressContainer {
+    width: 100%;
+    margin: 0rem 0;
+    display: flex;
+    justify-content: center;
+  }
+  
+  
+  .progressCard {
+    background-color: var(--wf-white);
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-md);
+    padding: 2rem;
+    width: 100%;
+    max-width: 800px;
+    text-align: center;
+  }
+    
   .progressIconContainer {
     margin-bottom: 1.5rem;
   }
@@ -1147,6 +1526,7 @@
     font-size: 0.9rem;
   }
 
+
   /* Spinner animation */
   .spinner {
     width: 40px;
@@ -1158,10 +1538,12 @@
     margin: 0 auto 1rem;
   }
 
+
   @keyframes spin {
     0% { transform: rotate(0deg); }
     100% { transform: rotate(360deg); }
   }
+
 
   /* ProgressDisplay component styles */
   .progressBarFill {
@@ -1172,6 +1554,7 @@
     background: linear-gradient(90deg, var(--wf-red) 0%, var(--wf-gold) 100%);
   }
 
+
   .stopwatchContainer {
     text-align: center;
     margin-bottom: 1rem;
@@ -1180,20 +1563,26 @@
     color: #666;
   }
 
+
   .progressDetailItem {
     margin-bottom: 1rem;
   }
+
 
   .errorList {
     margin-top: 0.5rem;
     font-size: 0.9rem;
   }
 
+
   .errorItem {
     color: var(--wf-red);
   }
+
 
   .progressNote {
     color: #888;
     font-style: italic;
   }
+
+  

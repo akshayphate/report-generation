@@ -2,24 +2,31 @@ import { NextApiRequest, NextApiResponse } from 'next';
 import { mongo } from '@ctip/toolkit';
 import { Job, JobsListResponse } from '../../types/job';
 
-const collection = mongo.collection;
+
+const { collection } = mongo;
+
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse<JobsListResponse | { error: string }>) {
   if (req.method !== 'GET') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
+
   try {
     const { userId } = req.query;
+
 
     if (!userId || typeof userId !== 'string') {
       return res.status(400).json({ error: 'Missing or invalid userId parameter' });
     }
 
-    const jobsCollection = collection('jobs');
 
-    // Fetch all jobs for the user
-    const jobs = await jobsCollection.findToArray({ userId });
+    const jobs = await collection('jobs').findToArray({ userId: userId });
+
+
+    // Sort by createdAt descending (recent first)
+    jobs.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+
 
     // Transform jobs to response format (exclude sensitive data)
     const jobResponses = jobs.map((job: any) => ({
@@ -32,10 +39,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
       zipFileSize: job.zipFileSize
     }));
 
+
     return res.status(200).json({
       jobs: jobResponses,
       total: jobResponses.length
     });
+
 
   } catch (error) {
     console.error('Error fetching jobs:', error);

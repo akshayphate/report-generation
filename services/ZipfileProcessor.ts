@@ -6,8 +6,11 @@
 */
 
 
+
+
 import JSZip from 'jszip';
 import rawDomainListData from '../data/domain_list.json';
+import { getDomainIdsFromQuestionnaire } from './questionnaireService';
 
 
 interface Entry {
@@ -17,10 +20,14 @@ interface Entry {
 }
 
 
+
+
 export interface QuestionnaireFile {
     name: string;
     content: ArrayBuffer;
 }
+
+
 
 
 export interface ControlEvidence {
@@ -31,10 +38,14 @@ export interface ControlEvidence {
 }
 
 
+
+
 export interface ExtractedFile {
     name: string;
     size?: number;
 }
+
+
 
 
 export interface ProcessedZipResult {
@@ -46,6 +57,8 @@ export interface ProcessedZipResult {
 }
 
 
+
+
 /**
  * Type definitions for domain mapping
  */
@@ -55,32 +68,31 @@ interface DomainMapping {
 }
 
 
+
+
 /**
  * Normalizes the raw domain list data into a strongly-typed array
  */
 const normalizeDomainList = (rawData: unknown): DomainMapping[] => {
     if (!Array.isArray(rawData)) {
-        console.warn('Raw domain data is not an array:', rawData);
         return [];
     }
+
+
 
 
     return rawData
         .filter((item): item is { Domain_Id: string; Domain_Name: string } => {
             if (!item || typeof item !== 'object') {
-                console.warn('Invalid domain item:', item);
                 return false;
             }
             if (!('Domain_Id' in item) || !('Domain_Name' in item)) {
-                console.warn('Missing Domain_Id or Domain_Name:', item);
                 return false;
             }
             if (typeof item.Domain_Id !== 'string' || typeof item.Domain_Name !== 'string') {
-                console.warn('Domain_Id or Domain_Name is not a string:', item);
                 return false;
             }
             if (item.Domain_Id.length === 0 || item.Domain_Name.length === 0) {
-                console.warn('Domain_Id or Domain_Name is empty:', item);
                 return false;
             }
             return true;
@@ -92,14 +104,20 @@ const normalizeDomainList = (rawData: unknown): DomainMapping[] => {
 };
 
 
+
+
 // Normalize the domain list once at module level
 const domainList: DomainMapping[] = normalizeDomainList(rawDomainListData);
+
+
 
 
 /**
  * Normalizes a string by trimming and converting to lowercase
  */
 const normalizeName = (name: string): string => name.trim().toLowerCase();
+
+
 
 
 /**
@@ -118,6 +136,8 @@ const createDomainNameToIdsMap = (domains: DomainMapping[]): Map<string, string[
 };
 
 
+
+
 /**
  * Maps a folder name to a domain
  */
@@ -126,9 +146,13 @@ const mapFolderToDomain = (folderName: string, domains: DomainMapping[]): { doma
     const matchingDomain = domains.find(domain => normalizeName(domain.Domain_Name) === normalizedFolderName);
 
 
+
+
     if (!matchingDomain) {
         return null;
     }
+
+
 
 
     return {
@@ -136,6 +160,8 @@ const mapFolderToDomain = (folderName: string, domains: DomainMapping[]): { doma
         domain_name: matchingDomain.Domain_Name
     };
 };
+
+
 
 
 /**
@@ -146,6 +172,8 @@ function normalizePath(path: string): string {
 }
 
 
+
+
 /**
  * Safely extracts folder name from a path
  */
@@ -154,6 +182,7 @@ function getFolderName(path: string): string {
     const parts = normalized.split('/').filter(Boolean);
     return parts[parts.length - 1] || '';
 }
+
 
 
 /**
@@ -169,8 +198,12 @@ function getRootFolderName(zipContent: JSZip): string | null {
         .map(path => path.replace('/', ''));
 
 
+
+
     return rootFolders.length > 0 ? rootFolders[0] : null;
 }
+
+
 
 
 /**
@@ -181,11 +214,15 @@ function getSubfolderName(path: string, rootFolder: string | null): string {
     const parts = normalized.split('/').filter(Boolean);
 
 
+
+
     if (rootFolder && parts[0] === rootFolder && parts.length > 1) {
         return parts[1];
     }
     return parts[0] || '';
 }
+
+
 
 
 /**
@@ -209,6 +246,8 @@ function getMimeType(fileName: string): string {
 }
 
 
+
+
 /**
  * Checks if a file is an Excel file
  */
@@ -216,6 +255,8 @@ function isExcelFile(fileName: string): boolean {
     const extension = fileName.split('.').pop()?.toLowerCase();
     return extension === 'xlsx' || extension === 'xls' || extension === 'xlsm';
 }
+
+
 
 
 /**
@@ -226,23 +267,18 @@ function isRootLevelFile(filePath: string, rootFolder: string | null): boolean {
     const pathParts = normalizedPath.split('/').filter(Boolean);
 
 
-    console.log(`Checking if file is at root level: "${filePath}" (rootFolder: "${rootFolder}")`);
-    console.log(`  Normalized path: "${normalizedPath}"`);
-    console.log(`  Path parts: [${pathParts.join(', ')}]`);
-
-
     if (rootFolder) {
         // Should be: rootFolder/filename.xlsx (2 parts total)
         const isRootLevel = pathParts.length === 2 && pathParts[0] === rootFolder;
-        console.log(`  Root folder case: ${pathParts.length} === 2 && "${pathParts[0]}" === "${rootFolder}" = ${isRootLevel}`);
         return isRootLevel;
     } else {
         // Should be: filename.xlsx (1 part total)
         const isRootLevel = pathParts.length === 1;
-        console.log(`  No root folder case: ${pathParts.length} === 1 = ${isRootLevel}`);
         return isRootLevel;
     }
 }
+
+
 
 
 /**
@@ -263,21 +299,23 @@ export async function processZipFile(zipFile: File): Promise<ProcessedZipResult>
     let questionnaireFile: { name: string; content: ArrayBuffer } | null = null;
 
 
+
+
     try {
-        console.log('Starting ZIP file processing...');
         const zip = new JSZip();
         const zipContent = await zip.loadAsync(zipFile);
 
 
+
+
         // Get the root folder name first (needed for questionnaire file detection)
         const rootFolder = getRootFolderName(zipContent);
-        console.log('Root folder:', rootFolder);
 
 
         // Find and extract the Excel file's content first (only at root level)
-        console.log('Searching for questionnaire file at root level...');
         const allExcelFiles = Object.values(zipContent.files).filter(file => !file.dir && isExcelFile(file.name));
-        console.log('All Excel files found:', allExcelFiles.map(f => f.name));
+
+
 
 
         const excelFileEntry = allExcelFiles.find(
@@ -285,24 +323,20 @@ export async function processZipFile(zipFile: File): Promise<ProcessedZipResult>
         );
 
 
+
+
         if (excelFileEntry) {
-            console.log(`Found questionnaire file at root level: ${excelFileEntry.name}`);
             const content = await excelFileEntry.async('arraybuffer');
             questionnaireFile = { name: excelFileEntry.name, content };
-        } else {
-            console.log('No questionnaire file found at root level');
-        }
-
-
+        } 
         // Verify domain list is available
         if (domainList.length === 0) {
-            console.error('No valid domains found in domain list');
             throw new Error('Domain list is empty after normalization. Please check domain_list.json format.');
         }
-        console.log('Using normalized domain list with', domainList.length, 'domains');
-
-
+        
         const domainNameToIdsMap = createDomainNameToIdsMap(domainList);
+
+
 
 
         // Collect all valid subfolders
@@ -315,8 +349,6 @@ export async function processZipFile(zipFile: File): Promise<ProcessedZipResult>
                 }
             }
         });
-        console.log('Found subfolders:', Array.from(subfolders));
-
 
         // Process each subfolder
         for (const folderName of subfolders) {
@@ -324,18 +356,20 @@ export async function processZipFile(zipFile: File): Promise<ProcessedZipResult>
             const domainIds = domainNameToIdsMap.get(normalizedFolderName);
 
 
+
+
             if (!domainIds || domainIds.length === 0) {
-                console.warn(`Could not map folder "${folderName}" to any Domain_Id`);
                 result.errors.push(`Unmapped folder: ${folderName}`);
                 continue;
             }
-            console.log(`Mapped folder "${folderName}" to Domain IDs:`, domainIds);
 
 
             // Find all files in this folder - including Excel files
             const folderPrefix = rootFolder ? `${rootFolder}/${folderName}/` : `${folderName}/`;
             const folderFiles = Object.entries(zipContent.files)
                 .filter(([path, file]) => !file.dir && path.startsWith(folderPrefix));
+
+
 
 
             const evidences: File[] = [];
@@ -346,17 +380,13 @@ export async function processZipFile(zipFile: File): Promise<ProcessedZipResult>
                 const fileSize = content.byteLength;
 
 
-                // Log file classification for debugging
-                if (isExcelFile(fileName)) {
-                    console.log(`Found Excel file in subfolder "${folderName}": ${fileName} - treating as evidence file`);
-                }
-
-
                 // Create a File object with size information
                 const file = new File([content], fileName, {
                     type: fileType,
                     lastModified: fileEntry.date.getTime()
                 });
+
+
 
 
                 // Add custom size property to the file object
@@ -366,8 +396,12 @@ export async function processZipFile(zipFile: File): Promise<ProcessedZipResult>
                 });
 
 
+
+
                 evidences.push(file);
             }
+
+
 
 
             // Add to controls array
@@ -377,30 +411,26 @@ export async function processZipFile(zipFile: File): Promise<ProcessedZipResult>
                 domainIds,
                     evidences
                 });
-                console.log(`Added control group "${folderName}" with ${evidences.length} evidence files`);
             }
+
+
 
 
         result.totalFiles = result.controls.reduce((sum, control) => sum + control.evidences.length, 0);
         result.totalControls = result.controls.length;
 
 
-        console.log('ZIP processing complete:', {
-            totalControls: result.totalControls,
-            totalFiles: result.totalFiles,
-            errors: result.errors,
-            questionnaireFile
-        });
-
-
         return { ...result, questionnaireFile };
 
 
+
+
     } catch (error) {
-        console.error('Error processing ZIP file:', error);
         throw error;
     }
 }
+
+
 
 
 /**
@@ -412,12 +442,18 @@ export async function validateZipStructure(zipFile: File): Promise<{ isValid: bo
     const excelFiles: {name: string, isQuestionnaire: boolean}[] = [];
 
 
+
+
     try {
         const zip = new JSZip();
         const zipContent = await zip.loadAsync(zipFile);
 
 
+
+
         const rootFolder = getRootFolderName(zipContent);
+
+
 
 
         // Find and log Excel files (both root level and in subfolders)
@@ -433,15 +469,17 @@ export async function validateZipStructure(zipFile: File): Promise<{ isValid: bo
                         name: path, // Use full path for clarity
                         isQuestionnaire: !!isRootLevel // Ensure isRootLevel is explicitly converted to a boolean
                     });
-                    
-                    console.log(`Found Excel file: ${path} (${isRootLevel ? 'questionnaire' : 'evidence'})`);
                 }
             }
         });
 
 
+
+
         // This set will contain the names of folders that contain files
         const foldersWithContent = new Set<string>();
+
+
 
 
         Object.keys(zipContent.files).forEach(path => {
@@ -449,6 +487,8 @@ export async function validateZipStructure(zipFile: File): Promise<{ isValid: bo
             if (!zipContent.files[path].dir) {
                 const normalizedPath = normalizePath(path);
                 const parts = normalizedPath.split('/').filter(p => p.length > 0);
+
+
 
 
                 // Determine the folder name based on whether there's a single root folder.
@@ -462,6 +502,8 @@ export async function validateZipStructure(zipFile: File): Promise<{ isValid: bo
                 }
 
 
+
+
                 if (folderName) {
                     foldersWithContent.add(folderName);
                 }
@@ -469,13 +511,9 @@ export async function validateZipStructure(zipFile: File): Promise<{ isValid: bo
         });
 
 
-        if (foldersWithContent.size === 0) {
-            // This isn't an error, just means no controls will be processed.
-            // The UI will show "0 controls found". We can let it pass validation.
-        }
-
-
         const validDomainNames = new Set(domainList.map(d => normalizeName(d.Domain_Name)));
+
+
 
 
         foldersWithContent.forEach(folderName => {
@@ -485,14 +523,10 @@ export async function validateZipStructure(zipFile: File): Promise<{ isValid: bo
         });
 
 
+
+
     } catch (e) {
         errors.push('Failed to read or parse the ZIP file. It may be corrupted.');
-        console.error('ZIP validation error:', e);
-    }
-
-
-    if (unmappedFolders.length > 0) {
-        console.warn(`Unmapped folders found: ${unmappedFolders.join(', ')}`);
     }
 
 
@@ -500,7 +534,113 @@ export async function validateZipStructure(zipFile: File): Promise<{ isValid: bo
     return { isValid: errors.length === 0, errors, unmappedFolders, excelFiles };
 }
 
+export async function validateZipStructureNew(zipFile: File): Promise<{ isValid: boolean; message: string }> {
+    try {
+        // 1. Check extension
+        if (!zipFile.name.toLowerCase().endsWith('.zip')) {
+            return {
+                isValid: false,
+                message: 'Invalid file type. Please upload a ZIP file.'
+            };
+        }
 
+
+        // 2. Load ZIP
+        const zip = new JSZip();
+        const zipContent = await zip.loadAsync(zipFile);
+
+
+        // 3. Get root folder
+        const rootFolder = getRootFolderName(zipContent);
+        if (!rootFolder) {
+            return {
+                isValid: false,
+                message: 'ZIP must contain a single root folder named after the vendor.'
+            };
+        }
+
+
+        // 4. Find questionnaire Excel file inside root folder
+        const excelFiles = Object.values(zipContent.files)
+            .filter(file => !file.dir && isRootLevelFile(file.name, rootFolder) && isExcelFile(file.name));
+        if (excelFiles.length === 0) {
+            return {
+                isValid: false,
+                message: 'Missing required questionnaire Excel file inside root folder.'
+            };
+        }
+        if (excelFiles.length > 1) {
+            return {
+                isValid: false,
+                message: 'Multiple questionnaire Excel files found inside root folder. Only one is allowed.'
+            };
+        }
+
+
+        // 5. Read domain IDs from questionnaire Excel file
+        const excelFileEntry = excelFiles[0];
+        const excelBuffer = await excelFileEntry.async('arraybuffer');
+        // You must implement or import getDomainIdsFromQuestionnaire for browser usage
+        // For Node.js, this is available in questionnaireService
+        let domainIdsFromExcel: string[] = [];
+        if (typeof getDomainIdsFromQuestionnaire === 'function') {
+            domainIdsFromExcel = await getDomainIdsFromQuestionnaire(excelBuffer);
+        } else {
+            // If not available, skip this check
+            return {
+                isValid: false,
+                message: 'Unable to parse questionnaire Excel file for domain IDs. Please contact support.'
+            };
+        }
+        if (!domainIdsFromExcel || domainIdsFromExcel.length === 0) {
+            return {
+                isValid: false,
+                message: 'No domain IDs found in questionnaire Excel file.'
+            };
+        }
+
+
+        // 6. Get corresponding domain names (normalized)
+        const domainIdToName: Record<string, string> = {};
+        domainList.forEach(d => {
+            domainIdToName[d.Domain_Id] = normalizeName(d.Domain_Name);
+        });
+        const expectedFolders = domainIdsFromExcel.map(id => domainIdToName[id]).filter(Boolean);
+
+
+        // 7. Find folders inside root folder
+        const foundFolders = new Set<string>();
+        Object.keys(zipContent.files).forEach(path => {
+            const file = zipContent.files[path];
+            const parts = normalizePath(path).split('/').filter(Boolean);
+            if (file.dir && parts.length === 2 && parts[0] === rootFolder) {
+                foundFolders.add(normalizeName(parts[1]));
+            }
+        });
+
+
+        // 8. Check if all expected folders are present
+        const missingFolders = expectedFolders.filter(folder => !foundFolders.has(folder));
+        if (missingFolders.length > 0) {
+            return {
+                isValid: false,
+                message: `Missing required domain folders inside root folder: ${missingFolders.join(', ')}`
+            };
+        }
+
+
+        // 9. Success
+        return {
+            isValid: true,
+            message: 'ZIP structure is valid. Questionnaire file and all required domain folders are present inside the root folder.'
+        };
+    } catch (e) {
+        return {
+            isValid: false,
+            message: 'Failed to read or parse the ZIP file. It may be corrupted.'
+        };
+    }
+}
 /**
  * Returns a mapping of normalized domain names to their Domain_Ids
  */
@@ -511,7 +651,6 @@ export function getAvailableControlMappings(): Record<string, string> {
     });
     return record;
 }
-
 
 /**
  * Returns a list of expected folder names for each domain
@@ -526,6 +665,9 @@ export function getExpectedFolderNames(): Array<{ domainCode: string, domainName
 
 
 
+
+
+
 /**
  * Maps domains to their files in a ZIP file
  */
@@ -537,10 +679,14 @@ export async function mapDomainsToDomainIds(zipFile: File): Promise<{ mappings: 
     };
 
 
+
+
     try {
         const zip = new JSZip();
         const zipContent = await zip.loadAsync(zipFile);
         const foundFolders = new Set<string>();
+
+
 
 
         // Extract all folder names
@@ -551,6 +697,8 @@ export async function mapDomainsToDomainIds(zipFile: File): Promise<{ mappings: 
                 if (folderName) foundFolders.add(folderName);
             }
         });
+
+
 
 
         // Process each folder
@@ -565,9 +713,10 @@ export async function mapDomainsToDomainIds(zipFile: File): Promise<{ mappings: 
                     });
 
 
+
+
                 if (domainFiles.length > 0) {
                     result.mappings[domainMapping.domain_id] = domainFiles;
-                    console.log(`Mapped domain "${folderName}" (${domainMapping.domain_id}) to ${domainFiles.length} files`);
                 }
             } else {
                 result.unmappedDomains.push(folderName);
@@ -576,15 +725,20 @@ export async function mapDomainsToDomainIds(zipFile: File): Promise<{ mappings: 
         }
 
 
+
+
         return result;
 
 
+
+
     } catch (error) {
-        console.error('Error mapping domains to files:', error);
         result.errors.push(`Failed to map domains: ${error instanceof Error ? error.message : 'Unknown error'}`);
         return result;
     }
 }
+
+
 
 
 /**

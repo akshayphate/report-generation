@@ -1,27 +1,27 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import { v4 as uuidv4 } from 'uuid';
-import { mongo } from '@ctip/toolkit';
+import { mongo, logger } from '@ctip/toolkit';
 import { Job, CreateJobRequest } from '../../types/job';
 import { processZipFile, ProcessedZipResult } from '../../services/ZipfileProcessor';
 import { getDesignElementsByCID, loadDomainList } from '../../services/promptServiceForVendor';
-import { getLLMEvidenceWithProgress, ProcessingProgress } from '../../services/evidenceService';
+import { ProcessingProgress } from '../../services/evidenceService';
 import { getDomainIdsFromQuestionnaire } from '../../services/questionnaireService';
 import JSZip from 'jszip';
-import axios from 'axios';
-import https from 'https';
-import { getToken } from '../../services/getToken';
-import absoluteUrl from 'next-absolute-url';
 import { validateControlBatchCore } from '../../services/validateControlService';
+import { getBearerToken } from '../../services/getBearerToken';
+
 
 const collection = mongo.collection;
+
 
 export const config = {
     api: {
         bodyParser: {
-            sizeLimit: '50mb', // Allow up to 50MB file uploads
+            sizeLimit: '100mb', // Allow up to 100MB file uploads
         },
     },
 };
+
 
 // Helper function to process ZIP file from buffer (Node.js environment)
 async function processZipFileFromBuffer(buffer: Buffer): Promise<ProcessedZipResult> {
@@ -33,82 +33,94 @@ async function processZipFileFromBuffer(buffer: Buffer): Promise<ProcessedZipRes
   };
   let questionnaireFile: { name: string; content: ArrayBuffer } | null = null;
 
+
   try {
-    console.log('Starting ZIP file processing from buffer...');
-    console.log('Buffer length:', buffer.length);
-    console.log('Buffer type:', typeof buffer);
-    console.log('Buffer constructor:', buffer.constructor.name);
+    logger.info('Starting ZIP file processing from buffer...');
+    logger.info('Buffer length:', buffer.length);
+    logger.info('Buffer type:', typeof buffer);
+    logger.info('Buffer constructor:', buffer.constructor.name);
     
     const zip = new JSZip();
     let zipContent;
     try {
-      zipContent = await zip.loadAsync(buffer);
-      console.log('ZIP loaded successfully');
+      zipContent = await zip.loadAsync(new Uint8Array(buffer));
+      logger.info('ZIP loaded successfully');
     } catch (zipError) {
       console.error('JSZip loading error:', zipError);
       throw new Error(`Failed to load ZIP file: ${zipError instanceof Error ? zipError.message : 'Unknown error'}`);
     }
 
+
     // Get the root folder name first (needed for questionnaire file detection)
     const rootFolder = getRootFolderName(zipContent);
-    console.log('Root folder:', rootFolder);
+    logger.info('Root folder:', rootFolder);
+
 
     // Find and extract the Excel file's content first (only at root level)
-    console.log('Searching for questionnaire file at root level...');
-    const allExcelFiles = Object.values(zipContent.files).filter(file => !file.dir && isExcelFile(file.name));
-    console.log('All Excel files found:', allExcelFiles.map(f => f.name));
+    logger.info('Searching for questionnaire file at root level...');
+    const allExcelFiles = Object.values(zipContent.files).filter((file: any) => !file.dir && isExcelFile(file.name));
+    logger.info('All Excel files found:', allExcelFiles.map(f => (f as JSZip.JSZipObject).name));
+
 
     const excelFileEntry = allExcelFiles.find(
-      file => isRootLevelFile(file.name, rootFolder)
+      (file: JSZip.JSZipObject) => isRootLevelFile(file.name, rootFolder)
     );
 
+
     if (excelFileEntry) {
-      console.log(`Found questionnaire file at root level: ${excelFileEntry.name}`);
-      const content = await excelFileEntry.async('arraybuffer');
-      questionnaireFile = { name: excelFileEntry.name, content };
+      //logger.info(`Found questionnaire file at root level: ${excelFileEntry.name}`);
+      const content = await (excelFileEntry as JSZip.JSZipObject).async('arraybuffer');
+      questionnaireFile = { name: (excelFileEntry as JSZip.JSZipObject).name, content };
     } else {
-      console.log('No questionnaire file found at root level');
+      logger.info('No questionnaire file found at root level');
     }
+
 
     // Load domain list
     const domainList = await loadDomainList();
     const domainNameToIdsMap = createDomainNameToIdsMap(domainList);
 
+
     // Collect all valid subfolders
     const subfolders = new Set<string>();
     Object.entries(zipContent.files).forEach(([path, file]) => {
-      if (file.dir) {
+      if ((file as JSZip.JSZipObject).dir) {
         const folderName = getSubfolderName(path, rootFolder);
         if (folderName && (!rootFolder || folderName !== rootFolder)) {
           subfolders.add(folderName);
         }
       }
     });
-    console.log('Found subfolders:', Array.from(subfolders));
+    logger.info('Found subfolders:', Array.from(subfolders));
+
 
     // Process each subfolder
     for (const folderName of subfolders) {
       const normalizedFolderName = normalizeName(folderName);
       const domainIds = domainNameToIdsMap.get(normalizedFolderName);
 
+
       if (!domainIds || domainIds.length === 0) {
         console.warn(`Could not map folder "${folderName}" to any Domain_Id`);
         result.errors.push(`Unmapped folder: ${folderName}`);
         continue;
       }
-      console.log(`Mapped folder "${folderName}" to Domain IDs:`, domainIds);
+      logger.info(`Mapped folder "${folderName}" to Domain IDs:`, domainIds);
+
 
       // Find all files in this folder
       const folderPrefix = rootFolder ? `${rootFolder}/${folderName}/` : `${folderName}/`;
       const folderFiles = Object.entries(zipContent.files)
-        .filter(([path, file]) => !file.dir && path.startsWith(folderPrefix));
+        .filter(([path, file]) => !(file as JSZip.JSZipObject).dir && path.startsWith(folderPrefix));
+
 
       const evidences: File[] = [];
       for (const [filePath, fileEntry] of folderFiles) {
-        const content = await fileEntry.async('arraybuffer');
+        const content = await (fileEntry as JSZip.JSZipObject).async('arraybuffer');
         const fileName = getFolderName(filePath);
         const fileType = getMimeType(fileName);
         const fileSize = content.byteLength;
+
 
         // Create a file-like object with base64 content for Node.js environment
         const base64Content = Buffer.from(content).toString('base64');
@@ -118,7 +130,7 @@ async function processZipFileFromBuffer(buffer: Buffer): Promise<ProcessedZipRes
           name: fileName,
           type: fileType,
           size: fileSize,
-          lastModified: fileEntry.date.getTime(),
+          lastModified: (fileEntry as JSZip.JSZipObject).date.getTime(),
           base64: dataUrl,
           webkitRelativePath: '',
           bytes: () => Promise.resolve(new Uint8Array(content)),
@@ -128,8 +140,10 @@ async function processZipFileFromBuffer(buffer: Buffer): Promise<ProcessedZipRes
           slice: (start: number, end: number) => content.slice(start, end)
         } as unknown as File;
 
+
         evidences.push(file);
       }
+
 
       // Add to controls array
       result.controls.push({
@@ -138,20 +152,31 @@ async function processZipFileFromBuffer(buffer: Buffer): Promise<ProcessedZipRes
         domainIds,
         evidences
       });
-      console.log(`Added control group "${folderName}" with ${evidences.length} evidence files`);
+      logger.info(`Added control group "${folderName}" with ${evidences.length} evidence files`);
     }
+
 
     result.totalFiles = result.controls.reduce((sum, control) => sum + control.evidences.length, 0);
     result.totalControls = result.controls.length;
 
-    console.log('ZIP processing complete:', {
+
+    if (questionnaireFile && questionnaireFile.content) {
+      const domainIdsFromExcel = await getDomainIdsFromQuestionnaire(questionnaireFile.content);
+      result.totalControls = domainIdsFromExcel.length;
+    } else {
+      result.totalControls = result.controls.length;
+    }
+
+    logger.info('ZIP processing complete:', {
       totalControls: result.totalControls,
       totalFiles: result.totalFiles,
       errors: result.errors,
       questionnaireFile
     });
 
+
     return { ...result, questionnaireFile };
+
 
   } catch (error) {
     console.error('Error processing ZIP file:', error);
@@ -159,10 +184,12 @@ async function processZipFileFromBuffer(buffer: Buffer): Promise<ProcessedZipRes
   }
 }
 
+
 // Helper functions (copied from ZipfileProcessor.ts)
 function normalizeName(name: string): string {
   return name.trim().toLowerCase();
 }
+
 
 function createDomainNameToIdsMap(domains: any[]): Map<string, string[]> {
   const domainNameToIdsMap: Map<string, string[]> = new Map();
@@ -176,6 +203,7 @@ function createDomainNameToIdsMap(domains: any[]): Map<string, string[]> {
   return domainNameToIdsMap;
 }
 
+
 function getRootFolderName(zipContent: JSZip): string | null {
   const paths = Object.keys(zipContent.files);
   const rootFolders = paths
@@ -187,6 +215,7 @@ function getRootFolderName(zipContent: JSZip): string | null {
   return rootFolders.length > 0 ? rootFolders[0] : null;
 }
 
+
 function getSubfolderName(path: string, rootFolder: string | null): string {
   const normalized = normalizePath(path);
   const parts = normalized.split('/').filter(Boolean);
@@ -196,15 +225,18 @@ function getSubfolderName(path: string, rootFolder: string | null): string {
   return parts[0] || '';
 }
 
+
 function normalizePath(path: string): string {
   return path.replace(/[\\/]+/g, '/').trim();
 }
+
 
 function getFolderName(path: string): string {
   const normalized = normalizePath(path);
   const parts = normalized.split('/').filter(Boolean);
   return parts[parts.length - 1] || '';
 }
+
 
 function getMimeType(fileName: string): string {
   const extension = fileName.split('.').pop()?.toLowerCase();
@@ -223,10 +255,12 @@ function getMimeType(fileName: string): string {
   }
 }
 
+
 function isExcelFile(fileName: string): boolean {
   const extension = fileName.split('.').pop()?.toLowerCase();
   return extension === 'xlsx' || extension === 'xls' || extension === 'xlsm';
 }
+
 
 function isRootLevelFile(filePath: string, rootFolder: string | null): boolean {
   const normalizedPath = normalizePath(filePath);
@@ -241,6 +275,7 @@ function isRootLevelFile(filePath: string, rootFolder: string | null): boolean {
   }
 }
 
+
 // Node.js compatible evidence processing function
 async function processEvidenceWithLLMNodeJS(
   controlPromptList: Array<{
@@ -249,20 +284,42 @@ async function processEvidenceWithLLMNodeJS(
     files: any[];
   }>,
   req: NextApiRequest,
-  onProgress?: (progress: ProcessingProgress) => void
+  onProgress?: (progress: ProcessingProgress) => Promise<void>
 ): Promise<Record<string, any[]>> {
   const results: Record<string, any[]> = {};
   let completedControls = 0;
   const totalControls = controlPromptList.length;
 
-  // Get the proper user session token
-  const token = await getToken();
+
+  // call getBearerToken
+  const token = await getBearerToken();
+
+
+
 
   for (const control of controlPromptList) {
     if (!control) continue;
     
     const { controlId, prompts, files } = control;
     const controlResults: any[] = [];
+
+
+    // If no evidence files, skip LLM call and give default answer
+    if (!files || files.length === 0) {
+      for (const prompt of prompts) {
+        controlResults.push({
+          designElementId: prompt.id,
+          designElement: prompt.subQuestion,
+          answer: 'No evidence provided.',
+          status: 'skipped',
+          error: 'No evidence files for this control.'
+        });
+      }
+      results[controlId] = controlResults;
+      completedControls++;
+      continue;
+    }
+
 
     try {
       // Get system prompt from database
@@ -281,6 +338,7 @@ async function processEvidenceWithLLMNodeJS(
             base64: file.base64
           }));
 
+
           // Call core validation directly (avoid REST hop)
           const response = await validateControlBatchCore({
             controlId: controlId,
@@ -292,7 +350,7 @@ async function processEvidenceWithLLMNodeJS(
             }],
             evidences: evidences
           }, token);
-
+          
           if (response && response.results && response.results.length > 0) {
             const result = response.results[0];
             controlResults.push({
@@ -323,12 +381,14 @@ async function processEvidenceWithLLMNodeJS(
         }
       }
 
+
       results[controlId] = controlResults;
       completedControls++;
 
+
       // Update progress
       if (onProgress) {
-        onProgress({
+        await onProgress({
           completedControls,
           totalControls,
           currentControl: controlId,
@@ -337,6 +397,7 @@ async function processEvidenceWithLLMNodeJS(
           errors: []
         });
       }
+
 
     } catch (error) {
       console.error(`Error processing control ${controlId}:`, error);
@@ -355,26 +416,33 @@ async function processEvidenceWithLLMNodeJS(
     }
   }
 
+
   return results;
 }
+
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
+
   try {
     const { userId, userName, zipFile } = req.body as CreateJobRequest & { zipFile: string };
+
 
     if (!userId || !userName || !zipFile) {
       return res.status(400).json({ error: 'Missing required fields' });
     }
 
+
     // Generate UUID for the job
     const jobUUID = uuidv4();
 
+
     // Create job document in MongoDB using CTIP
     const jobsCollection = collection('jobs');
+
 
     const job: Job = {
       UUID: jobUUID,
@@ -387,7 +455,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       zipFileSize: req.body.zipFileSize
     };
 
+
     await jobsCollection.insertOne(job);
+
 
     // Start asynchronous processing
     processZipAsync(jobUUID, zipFile, req).catch(error => {
@@ -405,11 +475,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       );
     });
 
+
     return res.status(200).json({ 
       message: 'Job created successfully',
       jobUUID,
       status: 'Pending'
     });
+
 
   } catch (error) {
     console.error('Error creating job:', error);
@@ -423,6 +495,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 async function processZipAsync(jobUUID: string, zipFileBase64: string, req: NextApiRequest) {
   const jobsCollection = collection('jobs');
 
+
   try {
     // Update status to Processing
     await jobsCollection.updateOne(
@@ -430,12 +503,14 @@ async function processZipAsync(jobUUID: string, zipFileBase64: string, req: Next
       { 
         $set: { 
           status: 'Processing',
-          updatedAt: new Date()
+          updatedAt: new Date(),
         }
       }
     );
 
+
     const startTime = Date.now();
+
 
     // Convert base64 back to binary data
     const base64Data = zipFileBase64.split(',')[1];
@@ -443,16 +518,19 @@ async function processZipAsync(jobUUID: string, zipFileBase64: string, req: Next
     
     // Process ZIP file directly with binary data
     const zipResult = await processZipFileFromBuffer(binaryData);
-    console.log('ZIP processing result:', zipResult);
+    logger.info('ZIP processing result:', zipResult);
+
 
     // Get domain IDs from excel file if it exists
     const domainIdsFromExcel = zipResult.questionnaireFile?.content
       ? await getDomainIdsFromQuestionnaire(zipResult.questionnaireFile.content)
       : null;
 
+
     // Load domain list
     const domainList = await loadDomainList();
     const mainQuestionMap = new Map(domainList.map(d => [d.Domain_Id, d.Question]));
+
 
     // Prepare control prompts
     const controlPromptList = (await Promise.all(
@@ -461,9 +539,11 @@ async function processZipAsync(jobUUID: string, zipFileBase64: string, req: Next
           ? controlGroup.domainIds.filter(id => domainIdsFromExcel.includes(id))
           : controlGroup.domainIds;
 
+
         if (validDomainIds.length === 0) {
           return null;
         }
+
 
         const promptsForGroup = await Promise.all(
           validDomainIds.map(async (domainId) => {
@@ -484,16 +564,32 @@ async function processZipAsync(jobUUID: string, zipFileBase64: string, req: Next
       })
     )).flat().filter((item): item is NonNullable<typeof item> => item !== null);
 
+
     if (controlPromptList.length === 0) {
       throw new Error('No valid controls found to process after filtering.');
     }
 
+
     // Process with LLM using Node.js compatible method
-    const onProgress = (progress: ProcessingProgress) => {
-      console.log('Progress update:', progress);
+    const onProgress = async (progress: ProcessingProgress) => {
+      logger.info('Progress update:', progress);
+      await jobsCollection.updateOne(
+        { UUID: jobUUID },
+        {
+          $set: {
+            progress: {
+              completedControls: progress.completedControls,
+              totalControls: progress.totalControls
+            },
+            updatedAt: new Date()
+          }
+        }
+      );
     };
 
+
     const batchResults = await processEvidenceWithLLMNodeJS(controlPromptList, req, onProgress);
+
 
     // Transform batch results into report format
     const reportResults = controlPromptList.flatMap(control => {
@@ -501,8 +597,10 @@ async function processZipAsync(jobUUID: string, zipFileBase64: string, req: Next
       const resultsForControl = batchResults[control.controlId] || [];
       const mainQuestion = mainQuestionMap.get(control.controlId) || 'Unknown Question';
 
+
       return control.prompts.map((prompt, index) => {
         const result = resultsForControl[index];
+
 
         if (!result) {
           return {
@@ -522,6 +620,7 @@ async function processZipAsync(jobUUID: string, zipFileBase64: string, req: Next
           };
         }
 
+
         try {
           const cleanAnswer = (result.answer || "").trim();
           if (!cleanAnswer) {
@@ -533,7 +632,7 @@ async function processZipAsync(jobUUID: string, zipFileBase64: string, req: Next
               Answer_Quality: 'NEEDS_REVIEW',
               Answer: 'N/A',
               Question: prompt.question,
-              SubQuestion: result.subQuestion,
+              SubQuestion: prompt.subQuestion,
               MainQuestion: mainQuestion,
               Answer_Source: 'N/A',
               Summary: 'API call failed or returned empty response.',
@@ -542,8 +641,10 @@ async function processZipAsync(jobUUID: string, zipFileBase64: string, req: Next
             };
           }
 
+
           const strippedAnswer = cleanAnswer.replace(/^```json\s*/, '').replace(/```\s*$/, '');
           let answerObj = JSON.parse(strippedAnswer);
+
 
           if (Array.isArray(answerObj)) {
             if (answerObj.length > 0) {
@@ -557,7 +658,7 @@ async function processZipAsync(jobUUID: string, zipFileBase64: string, req: Next
                 Answer_Quality: 'NEEDS_REVIEW',
                 Answer: 'N/A',
                 Question: prompt.question,
-                SubQuestion: result.subQuestion,
+                SubQuestion: prompt.subQuestion,
                 MainQuestion: mainQuestion,
                 Answer_Source: 'N/A',
                 Summary: 'API call returned an empty array.',
@@ -571,9 +672,11 @@ async function processZipAsync(jobUUID: string, zipFileBase64: string, req: Next
             (answerObj.Answer_Quality.charAt(0).toUpperCase() +
               answerObj.Answer_Quality.slice(1).toLowerCase()) : 'Needs_Review';
 
+
           const mappedAnswer = answerObj.Answer ?
             (answerObj.Answer.charAt(0).toUpperCase() +
               answerObj.Answer.slice(1).toLowerCase()) : 'No';
+
 
           return {
             id: `${control.controlId}-${prompt.id}`,
@@ -583,7 +686,7 @@ async function processZipAsync(jobUUID: string, zipFileBase64: string, req: Next
             Answer_Quality: mappedQuality,
             Answer: mappedAnswer,
             Question: prompt.question,
-            SubQuestion: result.subQuestion,
+            SubQuestion: result.designElement,
             MainQuestion: mainQuestion,
             Answer_Source: answerObj.Answer_Source || 'N/A',
             Summary: answerObj.Summary || strippedAnswer || 'N/A',
@@ -611,7 +714,9 @@ async function processZipAsync(jobUUID: string, zipFileBase64: string, req: Next
       });
     });
 
+
     const processingTime = Date.now() - startTime;
+
 
     // Update job with completed result
     await jobsCollection.updateOne(
@@ -630,11 +735,11 @@ async function processZipAsync(jobUUID: string, zipFileBase64: string, req: Next
       }
     );
 
-    console.log(`Job ${jobUUID} completed successfully`);
 
-  } catch (error) {
-    console.error(`Error processing job ${jobUUID}:`, error);
-    
+    logger.info(`Job ${jobUUID} completed successfully`);
+
+
+  } catch (error) {    
     // Update job status to failed
     await jobsCollection.updateOne(
       { UUID: jobUUID },

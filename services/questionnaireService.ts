@@ -51,7 +51,6 @@ function extractDomainCode(questionnaireName: string): string {
     if (!questionnaireName || !questionnaireName.includes('-')) return '';
     const normalized = questionnaireName.trim();
     const parts = normalized.split('-');
-    console.log("extract domain code : ", parts[0]?.trim());
     return parts[0]?.trim() || '';
 }
 
@@ -105,25 +104,20 @@ export const processQuestionnaire = async (
         questions.forEach((question: QuestionData, idx: number) => {
             const domainCode = extractDomainCode(question['Questionnaire Name']);
             const fileExtension = getFileExtension(question['Attachement Reference']);
-            console.log(`[${idx}] domainCode:`, domainCode, 'fileExtension:', fileExtension);
             if (fileExtension !== 'PDF') return; // Only process PDF files
 
 
             const domain = domainMap.get(domainCode);
-            console.log(`[${idx}] domain:`, domain);
             if (domain) {
                 // Step 1: Split on 'design element:'
                 const description = domain.Question_Description || "";
-                console.log(`[${idx}] description:`, description);
                 const parts = description.split('design element:');
-                console.log(`[${idx}] parts:`, parts);
                 if (parts.length > 1) {
                     // Step 2: Split the second part on newlines to get subquestions
                     const subQuestions = parts[1]
                         .split(/\r?\n/)
                         .map(line => line.trim())
                         .filter(line => line.length > 0);
-                    console.log(`[${idx}] subQuestions:`, subQuestions);
                     // Step 3: For each subquestion, create the output object
                     subQuestions.forEach((subQ) => {
                         result.push({
@@ -135,10 +129,8 @@ export const processQuestionnaire = async (
                 }
             }
         });
-        console.log('Final result:', result);
         return result;
     } catch (error) {
-        console.error('Error processing questionnaire:', error);
         throw error;
     }
 };
@@ -151,13 +143,7 @@ export const processQuestionnaire = async (
  */
 export const getDomainIdsFromQuestionnaire = async (buffer: ArrayBuffer): Promise<string[]> => {
     try {
-        console.log("Buffer type:", typeof buffer);
-        console.log("Is ArrayBuffer:", buffer instanceof ArrayBuffer);
-        console.log("Buffer length:", buffer.byteLength);
-
-
         if (!(buffer instanceof ArrayBuffer) || buffer.byteLength === 0) {
-            console.error("Invalid buffer provided to getDomainIdsFromQuestionnaire.");
             return [];
         }
 
@@ -170,7 +156,6 @@ export const getDomainIdsFromQuestionnaire = async (buffer: ArrayBuffer): Promis
 
 
         if (!targetSheet) {
-            console.warn("Excel file does not have a sheet named 'Data' or a second sheet.");
             return [];
         }
 
@@ -193,12 +178,10 @@ export const getDomainIdsFromQuestionnaire = async (buffer: ArrayBuffer): Promis
 
 
         const uniqueDomainIds = Array.from(new Set(domainIds));
-        console.log("Extracted domain IDs from Excel:", uniqueDomainIds);
 
 
         return uniqueDomainIds;
     } catch (error) {
-        console.error('Error extracting Domain IDs from questionnaire:', error);
         throw error;
     }
 };

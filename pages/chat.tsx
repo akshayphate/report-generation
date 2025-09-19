@@ -1,9 +1,8 @@
-// chat.tsx
 // src/components/Chat.tsx
 import React, { useState, useRef, useEffect } from 'react';
 import styles from '../styles/Chat.module.css';
-//import { Protected } from '@ctip/cip-framework-client';
-import RestrictAccess from '../components/RestrictAccess';
+import { Protected } from '@ctip/cip-framework-client';
+import RestrictAccess from '../components/RestrictAcess';
 import { getDesignElementsByCID, QuestionPrompt } from '../services/promptService';
 import { processDesignElements } from '../services/designService';
 import * as XLSX from 'xlsx';
@@ -13,6 +12,7 @@ interface Message {
   type: 'user' | 'bot';
   content: string;
 }
+
 
 
 
@@ -46,6 +46,7 @@ export default function Chat() {
 
 
 
+
   const pushMessage = (msg: Message) => {
     setMessages(prev => [...prev, msg]);
   };
@@ -58,6 +59,7 @@ export default function Chat() {
       const allIds = idPrompts.map(el => el.id);
       setSelectedIds(allIds);
     }
+
 
 
 
@@ -81,6 +83,7 @@ export default function Chat() {
     setTableCols([]);
     setTableData([]);
   };
+
 
 
 
@@ -108,6 +111,7 @@ export default function Chat() {
 
 
 
+
   // Handle file upload
   const handleFileUpload = (files: FileList | null) => {
     if (!files || !controlId) return;
@@ -128,10 +132,12 @@ export default function Chat() {
 
 
 
+
   // Toggle checkbox
   const toggleSelect = (id: string, checked: boolean) => {
     setSelectedIds(prev => (checked ? [...prev, id] : prev.filter(x => x !== id)));
   };
+
 
 
 
@@ -145,6 +151,7 @@ export default function Chat() {
 
 
 
+
     // Show selected prompts
     toSubmit.forEach(id => {
       const p = idPrompts.find(el => el.id === id)?.prompt;
@@ -153,9 +160,11 @@ export default function Chat() {
 
 
 
+
     setShowDropdown(false);
     setIsProcessing(true);
     pushMessage({ type: 'bot', content: 'Processing...' });
+
 
 
 
@@ -177,11 +186,9 @@ export default function Chat() {
         try {
           const obj = JSON.parse(txt);
           const updatedRow = Array.isArray(obj) ? obj : [obj];
-          console.log("Parsed JSON: ", updatedRow);
           updatedRow.forEach(row => {
             row.Control = idPrompts[(Number(r.designElementId)) - 1]?.design_element;
           });
-          console.log("Updated Row ", updatedRow);
           return updatedRow;
         } catch {
           return [
@@ -199,9 +206,11 @@ export default function Chat() {
 
 
 
+
       const cols = ['Control', 'Answer', 'Answer_Quality', 'Answer_Source', 'Summary', 'Reference'];
       setTableCols(cols);
       setTableData(rows);
+
 
 
 
@@ -209,6 +218,7 @@ export default function Chat() {
       setMessages(prev => prev.filter(m => m.content !== 'Processing...'));
       pushMessage({ type: 'bot', content: 'Here are the results:' });
       setSubmittedIds(prev => [...prev, ...toSubmit]);
+
 
 
 
@@ -220,6 +230,7 @@ export default function Chat() {
       setIsProcessing(false);
     }
   };
+
 
 
 
@@ -246,8 +257,9 @@ export default function Chat() {
 
 
 
+
   return (
-    // <Protected withRole={roles} Denied={() => <RestrictAccess />}>
+    <Protected withRole={roles} Denied={() => <RestrictAccess />}>
       <div className={styles.container}>
         <div className={styles.chatContainer}>
           {/* Chat messages */}
@@ -304,6 +316,7 @@ export default function Chat() {
               </div>
             )}
           </div>
+
 
 
 
@@ -386,8 +399,7 @@ export default function Chat() {
           )}
         </div>
       </div>
-    // </Protected>
+    </Protected>
   );
 }
-
 

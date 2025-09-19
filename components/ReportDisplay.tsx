@@ -6,8 +6,10 @@
 */
 
 
+
 import styles from "../styles/assesment.module.css";
 import React, { useState, useEffect } from 'react';
+
 
 interface EnhancedReportItem {
     id: string;
@@ -28,6 +30,7 @@ interface EnhancedReportItem {
 }
 
 
+
 interface ReportDisplayProps {
     results: EnhancedReportItem[];
     viewMode: 'table' | 'card';
@@ -35,9 +38,8 @@ interface ReportDisplayProps {
 }
 
 
+
 export const ReportDisplay: React.FC<ReportDisplayProps> = ({ results, viewMode, totalTime }) => {
-    
-    console.log('ReportDisplay received totalTime:', totalTime);
     
     // Format total time for display
     const formatTotalTime = (ms: number) => {
@@ -66,6 +68,7 @@ export const ReportDisplay: React.FC<ReportDisplayProps> = ({ results, viewMode,
     }
 
 
+
     // Function to convert values to title case (camelcase)
     const formatValue = (value: string): string => {
         if (!value) return 'N/A';
@@ -74,6 +77,7 @@ export const ReportDisplay: React.FC<ReportDisplayProps> = ({ results, viewMode,
         // For other values, convert to title case
         return value.charAt(0).toUpperCase() + value.slice(1).toLowerCase();
     };
+
 
 
     const getQualityClass = (quality: string) => {
@@ -88,6 +92,7 @@ export const ReportDisplay: React.FC<ReportDisplayProps> = ({ results, viewMode,
                 return '';
         }
     };
+
 
 
     const renderReportCard = (item: EnhancedReportItem) => (
@@ -129,6 +134,7 @@ export const ReportDisplay: React.FC<ReportDisplayProps> = ({ results, viewMode,
     );
 
 
+
     const renderTableView = () => (
         <div className={styles['table-container']}>
             <table className={styles['assessment-table']}>
@@ -146,7 +152,7 @@ export const ReportDisplay: React.FC<ReportDisplayProps> = ({ results, viewMode,
                     {results.map((item) => (
                         <tr key={item.id}>
                             <td className={styles.subQuestion}>
-                                {item.DesignElement || item.SubQuestion || 'N/A'}
+                                {item.DesignElement || item.SubQuestion || item.id || 'N/A'}
                             </td>
                             <td>
                                 <span className={styles[`answer-${item.Answer.toLowerCase()}`]}>
@@ -167,6 +173,7 @@ export const ReportDisplay: React.FC<ReportDisplayProps> = ({ results, viewMode,
             </table>
         </div>
     );
+
 
 
     return (

@@ -1,10 +1,12 @@
 import https from 'https';
 import { OpenAI } from 'openai';
 import { v4 as uuidv4 } from 'uuid';
-import { mongo } from '@ctip/toolkit';
+import { mongo, logger } from '@ctip/toolkit';
 import { ChatCompletionMessageParam } from 'openai/resources/chat';
 
+
 const collection = mongo.collection;
+
 
 export interface BatchDesignElement {
   id: string;
@@ -14,11 +16,13 @@ export interface BatchDesignElement {
   designElement?: string;
 }
 
+
 export interface BatchRequest {
   controlId: string;
   designElements: BatchDesignElement[];
   evidences: Array<{ name: string; base64: string }>;
 }
+
 
 export interface BatchResponseItem {
   designElementId: string;
@@ -28,10 +32,12 @@ export interface BatchResponseItem {
   error?: string;
 }
 
+
 export interface BatchResponse {
   controlId: string;
   results: BatchResponseItem[];
 }
+
 
 function buildHeaders(token: string) {
   const HTTP_REQUEST_ID = uuidv4() as string;
@@ -51,14 +57,31 @@ function buildHeaders(token: string) {
   } as Record<string, string | undefined>;
 }
 
+
 export async function validateControlBatchCore(payload: BatchRequest, token: string): Promise<BatchResponse> {
   const { controlId, designElements, evidences } = payload;
 
+
   const LLM_API_BASE_URL = process.env.GENERATE_UAT_URL;
-  const LLM_MODEL = process.env.LLM_MODEL;
+  var LLM_MODEL = process.env.LLM_MODEL;
   if (!LLM_API_BASE_URL || !LLM_MODEL) {
     throw new Error('Missing required environment variables');
   }
+
+
+  // Fetch model mapping from Prompts collection
+  const controlid_model_map = await collection('Prompts').findOne({ Control_Model_Mapping: "ControlId to LLM Model Mapping" });
+  if (controlid_model_map && controlid_model_map.Mapping) {
+    const model_json = JSON.parse(controlid_model_map.Mapping);
+    const controlIdToModelMap = new Map<string, string>();
+    model_json.forEach((item: { ControlId: string; LLM_Model: string }) => {
+      controlIdToModelMap.set(item.ControlId, item.LLM_Model);
+    });
+    if (controlIdToModelMap.has(controlId)) {
+      LLM_MODEL = controlIdToModelMap.get(controlId);
+    }
+  }
+
 
   const headers = buildHeaders(token);
   const client = new OpenAI({
@@ -68,10 +91,28 @@ export async function validateControlBatchCore(payload: BatchRequest, token: str
     defaultHeaders: headers,
   });
 
+
   const system_prompt = await collection('Prompts').findOne({ Prompt_Name: 'System Prompt' });
   if (!system_prompt) {
     throw new Error('System prompt not found');
   }
+
+
+  // Get today's date and format it as DD-MON-YEAR
+  const today = new Date();
+  const formattedDate = today.toLocaleDateString('en-US', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+  }).replace(',', ''); // Format example: "21-Aug-2025"
+
+
+  // Add the date to the system prompt
+  const updatedSystemPrompt = `${system_prompt.Prompt}\nToday's date is ${formattedDate}`;
+
+
+  logger.info({"LLM_MODEL used for Assessment of controlId": controlId, LLM_MODEL});
+
 
   const results = await Promise.all(
     designElements.map(async (designElement) => {
@@ -80,22 +121,25 @@ export async function validateControlBatchCore(payload: BatchRequest, token: str
           { type: 'text', text: designElement.prompt },
           ...evidences.map(({ name }) => ({ type: 'text', text: `Evidence Name: ${name}` })),
           ...evidences.map(({ base64 }) => ({ type: 'image_url', image_url: { url: base64 } })),
-          { type: 'text', text: designElement.question },
+          // { type: 'text', text: designElement.question },
         ];
 
+
         const messages = [
-          { role: 'system' as const, content: [{ type: 'text', text: system_prompt.Prompt }] },
+          { role: 'system' as const, content: [{ type: 'text', text: updatedSystemPrompt }] },
           { role: 'user' as const, content: contentArray },
         ] as ChatCompletionMessageParam[];
 
+
         const completion = await client.chat.completions.create({
-          model: LLM_MODEL,
+          model: LLM_MODEL as string,
           messages,
           temperature: 0,
           top_p: 1,
           max_tokens: 8192,
           seed: 42,
         });
+
 
         const answer = completion.choices[0]?.message?.content ?? '';
         return {
@@ -115,6 +159,7 @@ export async function validateControlBatchCore(payload: BatchRequest, token: str
       }
     })
   );
+
 
   return { controlId, results };
 }

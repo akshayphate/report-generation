@@ -2,6 +2,7 @@ import React, { useState, useEffect, useContext } from "react";
 import { Button } from "@progress/kendo-react-buttons";
 import { ReportDisplay } from "../components/ReportDisplay";
 import styles from "../styles/Jobs.module.css";
+import "../styles/globals-jobs.css";
 import "@progress/kendo-theme-default/dist/all.css";
 import { JobResponse, JobsListResponse } from "../types/job";
 // import { AppContext } from "@ctip/cip-framework-client";

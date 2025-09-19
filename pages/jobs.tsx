@@ -17,7 +17,7 @@ const JobsPage: React.FC = () => {
   const [showReport, setShowReport] = useState(false);
   const [viewMode, setViewMode] = useState<"card" | "table">("table");
   const [refreshingJobs, setRefreshingJobs] = useState<Set<string>>(new Set());
-  const [showControlsProcessed, setShowControlsProcessed] = useState(true);
+  const [hiddenJobCards, setHiddenJobCards] = useState<Set<string>>(new Set());
   // const user = useContext(AppContext);
   const userName =  "Guest";
   const router = useRouter();
@@ -175,6 +175,19 @@ const JobsPage: React.FC = () => {
     return `${minutes} min ${seconds} sec`;
   }
 
+  // Toggle individual job card controls visibility
+  const toggleJobCardControls = (jobUUID: string) => {
+    setHiddenJobCards(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(jobUUID)) {
+        newSet.delete(jobUUID);
+      } else {
+        newSet.add(jobUUID);
+      }
+      return newSet;
+    });
+  };
+
 
   useEffect(() => {
     
@@ -265,14 +278,6 @@ const JobsPage: React.FC = () => {
         >
           Submit a New Assessment
         </Button>
-        <Button
-          onClick={() => setShowControlsProcessed(!showControlsProcessed)}
-          themeColor={"info"}
-          fillMode="outline"
-          className={styles.actionButton}
-        >
-          {showControlsProcessed ? "Hide" : "Show"} Controls Processed
-        </Button>
       </div>
 
 
@@ -329,6 +334,16 @@ const JobsPage: React.FC = () => {
                     : "Fetch Status"}
                 </Button>
 
+                {job.status === "Processing" && (
+                  <Button
+                    onClick={() => toggleJobCardControls(job.UUID)}
+                    themeColor={"secondary"}
+                    fillMode="outline"
+                    size="small"
+                  >
+                    {hiddenJobCards.has(job.UUID) ? "Show" : "Hide"} Progress
+                  </Button>
+                )}
 
                 {job.status === "Completed" && (
                   <>
@@ -349,7 +364,6 @@ const JobsPage: React.FC = () => {
                     </Button>
                   </>
                 )}
-
 
                 {job.status === "Failed" && job.result?.error && (
                   <div className={styles.errorMessage}>
@@ -375,7 +389,7 @@ const JobsPage: React.FC = () => {
               )}
 
 
-              {job.status === "Processing" && job.progress && showControlsProcessed && (
+              {job.status === "Processing" && job.progress && !hiddenJobCards.has(job.UUID) && (
                 <div className={styles.jobSummary}>
                   <p>
                     <strong>Controls Processed:</strong> {job.progress.completedControls} of {job.progress.totalControls}

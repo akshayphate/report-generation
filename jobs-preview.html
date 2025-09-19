@@ -389,7 +389,6 @@
         <div class="actionButtons">
             <button class="btn">Refresh Jobs</button>
             <button class="btn btn-primary">Submit a New Assessment</button>
-            <button class="btn" onclick="toggleControls()">Hide Controls Processed</button>
         </div>
 
         <div class="jobsList">
@@ -436,9 +435,10 @@
 
                 <div class="jobActions">
                     <button class="btn">Fetch Status</button>
+                    <button class="btn" onclick="toggleProgress('processing-job')">Hide Progress</button>
                 </div>
 
-                <div class="jobSummary" id="controlsProcessed">
+                <div class="jobSummary" id="processing-job">
                     <p><strong>Controls Processed:</strong> 3 of 12</p>
                     <div class="progressBar">
                         <div class="progressBarFill" style="--progress-width: 25%"></div>
@@ -492,16 +492,16 @@
     </div>
 
     <script>
-        function toggleControls() {
-            const controlsElement = document.getElementById('controlsProcessed');
-            const button = document.querySelector('button[onclick="toggleControls()"]');
+        function toggleProgress(jobId) {
+            const progressElement = document.getElementById(jobId);
+            const button = document.querySelector(`button[onclick="toggleProgress('${jobId}')"]`);
             
-            if (controlsElement.style.display === 'none') {
-                controlsElement.style.display = 'block';
-                button.textContent = 'Hide Controls Processed';
+            if (progressElement.style.display === 'none') {
+                progressElement.style.display = 'block';
+                button.textContent = 'Hide Progress';
             } else {
-                controlsElement.style.display = 'none';
-                button.textContent = 'Show Controls Processed';
+                progressElement.style.display = 'none';
+                button.textContent = 'Show Progress';
             }
         }
     </script>

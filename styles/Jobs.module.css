@@ -1,12 +1,12 @@
 /* ===============================================
-   Minimal Jobs Display Styling
+   Minimal Jobs Display Styling - Wells Fargo Theme
    =============================================== */
 
 /* CSS Variables for consistent theming */
 :root {
-  --primary-color: #2563eb;
-  --primary-light: #3b82f6;
-  --primary-dark: #1d4ed8;
+  --primary-color: #D41C2C;
+  --primary-light: #E53E3E;
+  --primary-dark: #B91C1C;
   --success-color: #10b981;
   --warning-color: #f59e0b;
   --error-color: #ef4444;
